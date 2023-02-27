@@ -1,41 +1,20 @@
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+
 </style>
 
 <script lang="ts">
   import Login from './lib/Login.svelte';
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
+
+  let page = 0;
+
+	function logIn(event: CustomEvent<Boolean>) {
+		console.log("Log in successful");
+    page = 1;
+	}
 </script>
 
 <main>
-  <Login/>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a
-      href="https://github.com/sveltejs/kit#readme"
-      target="_blank"
-      rel="noreferrer">SvelteKit</a
-    >, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">Click on the Vite and Svelte logos to learn more</p>
+  {#if page==0}
+    <Login on:attempt={logIn}/>
+  {/if}
 </main>
