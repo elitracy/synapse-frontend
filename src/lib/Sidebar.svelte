@@ -1,11 +1,11 @@
 {#if show}
     {#if atTop}
-        <nav transition:fly={{x: 250, opacity: 1}} style="top:50px;">
+        <nav transition:fly={{x: 250, opacity: 1}} style="top:50px;height:100%">
             <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
         </nav>
     {/if}
     {#if !atTop}
-    <nav transition:fly={{x: 250, opacity: 1}}>
+    <nav transition:fly={{x: 250, opacity: 1}} style="height:100%">
         <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
     </nav>
     {/if}
