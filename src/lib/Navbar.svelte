@@ -12,7 +12,7 @@
       </Section>
     </Row>
   </TopAppBar>
-  <AutoAdjust {topAppBar}>
+  <AutoAdjust style="padding: 0px;"{topAppBar}>
     
     <!-- <img
       alt="Page content placeholder"

@@ -1,10 +1,22 @@
 <script>
     import Navbar from "./Navbar.svelte"
     import IconButton from "@smui/icon-button";
+    import Note from "./Note.svelte"
+
+    let displayNote = true;
 
 </script>
 
+<div class="container">
+    <Navbar />
+    {#if displayNote}
+        <Note />
+    {/if}
+</div>
 
-<Navbar />
+<style> 
+.container{
+    height: fit-content;
+}
+</style>
 
-<p style="font-size:100px">Welcome<br/>To<br/>Our<br/>Lovely<br/>Landing<br/>Page.<br/></p>
