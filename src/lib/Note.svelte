@@ -1,19 +1,43 @@
+
+
 <script>
-    import { element } from "svelte/internal"
+    import { onMount } from "svelte";
+    import Quill from "quill";
 
+  
+    let pages = [1,2,3];
 
-let pages = [1,2,3];
+    let pg1;
+    
+      
+      export let toolbarOptions = [
+          [{ header: 1 }, { header: 2 }, "blockquote", "link", "image", "video"],
+          ["bold", "italic", "underline", "strike"],
+          [{ list: "ordered" }, { list: "ordered" }],
+          [{ align: [] }],
+          ["clean"]
+      ];
+      
+    onMount(async () => {
 
+        let quill1 = new Quill(pg1, {
+            modules: {
+            toolbar: toolbarOptions
+            },
+            theme: "snow",
+            placeholder: ""
+        });
+
+        console.log("success");
+    });
 </script>
 
 
-<div class="container">
-    <!-- <div class="page" id="first">
+<div class="container" id="pages">
 
-    </div> -->
-    {#each pages as pg}
+    <!-- {#each pages as pg}
         {#if pg==1}
-            <div class="page" style="margin-top: 20vh;">
+            <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
                 {pg}
             </div>
         {:else}
@@ -22,10 +46,18 @@ let pages = [1,2,3];
             </div>
         {/if}
         
-    {/each}
+    {/each} -->
+    <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
+
+    </div>
+
 </div>
 
+
+
 <style>
+    @import 'https://cdn.quilljs.com/1.3.6/quill.snow.css';
+
     .container{
         min-width: 100vw;
         min-height: fit-content;
@@ -36,6 +68,8 @@ let pages = [1,2,3];
         flex-direction: column;
         justify-content: space-around;
         align-items: center;
+
+        padding:20vh;
     }
 
     .page{
@@ -45,8 +79,12 @@ let pages = [1,2,3];
 
         color: black;
 
-        margin-bottom: 5vh;
+        padding-left: 5em;
+        padding-right: 5em;
+        padding-top: 7.5em;
+        padding-bottom: 7.5em;
 
-        box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+        margin-bottom: 5vh;
+        box-shadow: rgba(255, 255, 255, 0.1) 0px 1px 1px 0px inset, rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px;
     }
 </style>
