@@ -1,5 +1,5 @@
 
-<TopAppBar bind:this={topAppBar} variant="short">
+<TopAppBar bind:this={topAppBar} variant="short" style="background-color:#50656e;">
     <Row>
       <Section>
         <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton>
