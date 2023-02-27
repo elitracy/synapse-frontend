@@ -1,8 +1,11 @@
 {#if show}
-<div>
+<div style="top:50px;">
   <div class="modal-overlay" data-close on:click={overlay_click} transition:fade={{duration: 150}}>
+    <div>
+      <main><p><br/><br/><br/></p></main>
+    </div>
     <div class="modal-container">
-      <main><p>About me...</p></main>
+      <main><p>Welcome to Note 1!</p></main>
     </div>
   </div>
 </div>

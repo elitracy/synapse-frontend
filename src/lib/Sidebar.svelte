@@ -1,6 +1,6 @@
 {#if show}
-  <nav transition:fly={{x: 250, opacity: 1}}>
-    <button on:click={() => {modal_show = true; show = false;}}>About</button>
+  <nav transition:fly={{x: 250, opacity: 1}} style="top:50px;">
+    <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
   </nav>
 {/if}
 

@@ -1,38 +1,60 @@
-<script lang="ts">
-  import TopAppBar, {
-    Row,
-    Section,
-    Title,
-    AutoAdjust,
-  } from '@smui/top-app-bar';
-  import IconButton from '@smui/icon-button';
- 
-  let topAppBar: TopAppBar;
-</script>
-
 
 <TopAppBar bind:this={topAppBar} variant="short">
     <Row>
       <Section>
-        <IconButton class="material-icons">menu</IconButton>
-        <Title>Short</Title>
+        <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton>
+        <Title>Synapse</Title>
       </Section>
       <Section align="end" toolbar>
         <IconButton class="material-icons" aria-label="Download"
-          >file_download</IconButton
+          >account_circle</IconButton
         >
       </Section>
     </Row>
   </TopAppBar>
   <AutoAdjust {topAppBar}>
     
-    <img
+    <!-- <img
       alt="Page content placeholder"
       src="/page-content.jpg"
       style="display: block; max-width: 100%; height: auto; margin: 1em auto;"
-    />
+    /> -->
   </AutoAdjust>
+
+  <Sidebar bind:show={sidebar_show} />
+
+  
+
+  <script lang="ts">
+    import TopAppBar, {
+      Row,
+      Section,
+      Title,
+      AutoAdjust,
+    } from '@smui/top-app-bar';
+    import IconButton from '@smui/icon-button';
+    import Sidebar from './Sidebar.svelte';
+   
+    let topAppBar: TopAppBar;
+    let sidebar_show = false;
+  </script>
+
   <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css">
+  <!-- Material Icons -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/icon?family=Material+Icons"
+/>
+<!-- Roboto -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700"
+/>
+<!-- Roboto Mono -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/css?family=Roboto+Mono"
+/>
   <style>
     /* Hide everything above this component. */
     :global(#smui-app),
