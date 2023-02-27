@@ -1,0 +1,5 @@
+[
+    {"name" : "Note 1", "category" : "math"},
+    {"name" : "Note 2", "category" : "science"},
+    {"name" : "Note 3", "category" : "math"}
+]
