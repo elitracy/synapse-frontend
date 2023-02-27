@@ -1,7 +1,14 @@
 {#if show}
-  <nav transition:fly={{x: 250, opacity: 1}} style="top:50px;">
-    <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
-  </nav>
+    {#if atTop}
+        <nav transition:fly={{x: 250, opacity: 1}} style="top:50px;">
+            <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
+        </nav>
+    {/if}
+    {#if !atTop}
+    <nav transition:fly={{x: 250, opacity: 1}}>
+        <button on:click={() => {modal_show = true; show = false;}}>Note 1</button>
+    </nav>
+    {/if}
 {/if}
 
 <Modal bind:show={modal_show} />
@@ -12,6 +19,15 @@ import Modal from './SidebarModal.svelte';
 
 export let show = false;
 let modal_show = false;
+let atTop = true;
+
+    window.addEventListener("scroll", function(){
+    if(window.scrollY==0){
+        atTop = true;
+    } else {
+        atTop = false;
+    }
+    });
 </script>
 		
 <style>
