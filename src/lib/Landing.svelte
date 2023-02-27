@@ -20,3 +20,7 @@
 }
 </style>
 
+<Navbar />
+<body>
+    <p style="font-size:100px">Welcome<br/>To<br/>Our<br/>Lovely<br/>Landing<br/>Page.<br/></p>
+</body>
