@@ -13,7 +13,7 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  
+  overflow-x: hidden;
 }
 
 a {
@@ -50,10 +50,11 @@ h1 {
   text-align: center;
   height: 100vh;
 
+  padding: 0px;
+
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  align-items: center; 
 }
 
 button {

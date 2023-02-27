@@ -19,6 +19,7 @@
         {#each notes as note}
             <button style="margin-bottom:10px" on:click={() => {modal_show = true; show = false;}}>{note.name}</button>
         {/each}
+
     </nav>
     {/if} -->
 {/if}
