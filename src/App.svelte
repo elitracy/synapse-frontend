@@ -17,12 +17,12 @@
 </script>
 
 <main>
-  <Navbar />
   
   {#if page==0}
     <Login on:attempt={logIn}/>
   {/if}
   {#if page==1}
+    <Navbar />
     <Landing />
   {/if}
 </main>
