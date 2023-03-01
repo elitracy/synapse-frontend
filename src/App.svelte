@@ -2,23 +2,33 @@
 
 </style>
 
+<script lang="ts" context="module">
+  export type note = {
+      id: number;
+      name: string;
+      category: string;
+      delta: Delta | null;
+  };
+</script>
+
 <script lang="ts">
   import Login from './lib/Login.svelte';
   import Landing from './lib/Landing.svelte';
   import IconButton from '@smui/icon-button';
   import Navbar from './lib/Navbar.svelte';
 
+  import type Delta from "../node_modules/@types/quill/node_modules/quill-delta";
 
-  type note = {name:string, category:string, id:number};
+  let d = null;
 
   let note1: note;
-  note1 = {name:"Note 1", category:"math", id:1};
+  note1 = {id: 1, name:"Note 1", category:"math", delta:d};
 
   let note2: note;
-  note2 = {name:"Note 2", category:"chemistry", id:2};
+  note2 = {id: 2, name:"Note 2", category:"biology", delta:d};
 
   let note3: note;
-  note3 = {name:"Note 3", category:"biology", id:3};
+  note3 = {id: 3, name:"Note 3", category:"chemistry", delta:d};
 
   type notes = note[];
   let notes = [

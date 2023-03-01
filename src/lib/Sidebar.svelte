@@ -27,6 +27,16 @@
 
 <Modal bind:show={modal_show} />
 
+<script lang="ts" context="module">
+  import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+  export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
+
 <script lang="ts">
 import { fly } from 'svelte/transition';
 import Modal from './SidebarModal.svelte';
@@ -46,7 +56,6 @@ window.addEventListener("scroll", function(){
   }
   });
 
-type note = {name:string, category:string, id:number};
 type notes = note[];
 
 export let noteList: notes;

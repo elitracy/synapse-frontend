@@ -1,27 +1,40 @@
-
+<script lang="ts" context="module">
+    export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
 
 <script lang="ts">
     import { onMount } from "svelte";
     import Quill from "quill";
-
-    type note = {name:string, category:string, id:number};
+    import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+	import { afterUpdate } from 'svelte';
 
     export let focusNote: note;
+
+    let noteId: number;
+    noteId = 1;
+
+    let textcpy: string;
 
     let pg1 : HTMLElement;
     
       
       export let toolbarOptions = [
-          [{ header: 1 }, { header: 2 }, "blockquote", "link", "image", "video"],
+          [{ header: [1,2,3,4,5,6,false] }, "blockquote", "link", "image", "video"],
           ["bold", "italic", "underline", "strike"],
           [{ list: "ordered" }, { list: "ordered" }],
           [{ align: [] }],
-          ["clean"]
+          ["clean"],
       ];
+
+    let quill: Quill;
       
     onMount(async () => {
-
-        let quill1 = new Quill(pg1, {
+        quill = new Quill(pg1, {
             modules: {
             toolbar: toolbarOptions
             },
@@ -29,7 +42,39 @@
             placeholder: ""
         });
 
+        noteId = focusNote.id;
+
+        quill.on('text-change', function(delta, oldDelta, source) {
+            if (source == 'api') {
+                console.log("An API call triggered this change.");
+            } else if (source == 'user') {
+                console.log("A user action triggered this change.");
+            }
+
+            saveText();
+
+        });
+
     });
+
+    afterUpdate(async () => {
+        if(focusNote.delta!=null && noteId != focusNote.id) {
+            console.log("updating display contents");
+            quill.setContents(focusNote.delta);
+            noteId = focusNote.id;
+        } else if(focusNote.delta==null && noteId != focusNote.id) {
+            console.log("updating display contents to nothing");
+            quill.setText("");
+            noteId = focusNote.id;
+        }
+    });
+
+    
+
+    function saveText() {
+        focusNote.delta = quill.getContents();
+    }
+    
 </script>
 
 

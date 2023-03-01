@@ -1,4 +1,14 @@
 
+<script lang="ts" context="module">
+  import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+  export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
+
 <script lang="ts">
   import TopAppBar, {
     Row,
@@ -22,7 +32,6 @@
   let topAppBar: TopAppBar;
   let sidebar_show = false;
 
-  type note = {name:string, category:string, id:number};
   type notes = note[];
 
   export let noteList: notes;

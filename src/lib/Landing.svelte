@@ -1,13 +1,23 @@
+<script lang="ts" context="module">
+    export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
+
 <script lang="ts">
     import Navbar from "./Navbar.svelte"
     import IconButton from "@smui/icon-button";
     import Note from "./Note.svelte"
     import { createEventDispatcher } from 'svelte';
 
+    import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+    
+
     let displayNote = true;
 
-
-    type note = {name:string, category:string, id:number};
     type notes = note[];
 
     export let noteList: notes;
