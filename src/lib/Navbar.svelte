@@ -1,3 +1,4 @@
+@import 'node_modules/svelte-material-ui/bare.css';
 
 <TopAppBar bind:this={topAppBar} variant="short" style="background-color:#50656e;">
     <Row>
