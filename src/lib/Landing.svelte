@@ -14,13 +14,9 @@
     {/if}
 </div>
 
+
 <style> 
 .container{
     height: fit-content;
 }
 </style>
-
-<Navbar />
-<body>
-    <p style="font-size:100px">Welcome<br/>To<br/>Our<br/>Lovely<br/>Landing<br/>Page.<br/></p>
-</body>
