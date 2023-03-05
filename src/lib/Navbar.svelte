@@ -40,6 +40,7 @@
     let sidebar_show = false;
   </script>
 
+<link rel="stylesheet" href="src/bare.css">
   <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css">
   <!-- Material Icons -->
 <link
