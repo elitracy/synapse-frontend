@@ -1,4 +1,4 @@
-@import 'node_modules/svelte-material-ui/bare.css';
+
 
 <TopAppBar bind:this={topAppBar} variant="short" style="background-color:#50656e;">
     <Row>
@@ -41,7 +41,7 @@
   </script>
 
 <link rel="stylesheet" href="src/bare.css">
-  <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css">
+  <!-- <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css"> -->
   <!-- Material Icons -->
 <link
 rel="stylesheet"
