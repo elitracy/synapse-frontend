@@ -17,6 +17,8 @@
     
 
     let displayNote = true;
+    const dispatch1 = createEventDispatcher<{make:note}>();
+
 
     type notes = note[];
 
@@ -36,10 +38,14 @@
 
     }
 
+    function newNote() {
+        dispatch1('make', focusNote);
+    }
+
 </script>
 
 <div class="container">
-    <Navbar noteList={noteList} on:toFocus={toFocus}/>
+    <Navbar noteList={noteList} on:toFocus={toFocus} on:make={newNote}/>
     {#if displayNote}
         <Note focusNote={focusNote}/>
     {/if}

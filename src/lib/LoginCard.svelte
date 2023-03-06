@@ -147,7 +147,7 @@
 
     const url = "https://api.synapsenote.com/api/users";
 
-    const dispatch = createEventDispatcher<{ attempt: boolean }>()
+    const dispatch = createEventDispatcher<{ userID: string }>()
 
     async function loginAttempt() {
         // query the database to check UN against Pass
@@ -172,7 +172,7 @@
                         loginSuccess = true
 
                     // report the message
-                    if (loginSuccess) dispatch('attempt', loginSuccess)
+                    if (loginSuccess) dispatch('userID', response.data.id)
                 }
             })
             .catch(function (error) {
@@ -212,7 +212,7 @@
 
                     let createU = axios.create();
 
-                    await createU.post(url, {
+                    await createU.post(url+"/", {
                         name: n,
                         email: e,
                         password: p
@@ -226,7 +226,7 @@
                     });
 
                     // report the message
-                    if (loginSuccess) dispatch('attempt', loginSuccess)
+                    if (loginSuccess) dispatch('userID', response.data.id)
                 }
             })
             .catch(function (error) {

@@ -18,15 +18,26 @@
   } from '@smui/top-app-bar';
   import IconButton from '@smui/icon-button';
   import Sidebar from './Sidebar.svelte';
+  
   import { createEventDispatcher } from 'svelte';
   
   const dispatch = createEventDispatcher<{toFocus:number}>();
+  const dispatch1 = createEventDispatcher<{make:Boolean}>();
 
   function toFocus(message: CustomEvent<number>) {
       // report the new noteID
       dispatch("toFocus",
           message.detail
       );
+  }
+
+  function newNote() {
+      // report the new noteID
+      dispatch1("make",
+          true
+      );
+
+      console.log("here");
   }
  
   let topAppBar: TopAppBar;
@@ -47,6 +58,7 @@
         <IconButton class="material-icons" aria-label="Download"
           >account_circle</IconButton
         >
+        
       </Section>
     </Row>
   </TopAppBar>
@@ -59,7 +71,7 @@
     /> -->
   </AutoAdjust>
 
-  <Sidebar bind:show={sidebar_show} noteList={noteList} on:toFocus={toFocus}/>
+  <Sidebar bind:show={sidebar_show} noteList={noteList} on:toFocus={toFocus} on:make={newNote}/>
 
   
 

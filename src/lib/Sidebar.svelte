@@ -1,6 +1,6 @@
 {#if show}
     <!-- {#if atTop} -->
-        <nav transition:fly={{x: 250, opacity: 1}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;">
+        <nav transition:fly={{x: 250, opacity: 1}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;display:flex;flex-direction:column;align-items:center;">
             <SearchBar bind:textValue={tValue}/>
             {#each noteList as note}
                 {#if tValue === '' || note.name.toUpperCase().includes(tValue.toUpperCase())}
@@ -9,8 +9,12 @@
                         on:click={() => {modal_show = true; show = false; focusNewNote(note.id);}}>
                             {note.name}
                     </button>
+                    
                 {/if}
             {/each}
+            <IconButton class="material-icons"  aria-label="Download" on:click={newNote} style="color:black;"
+            >add_box</IconButton
+            >
         </nav>
     <!-- {/if} -->
     <!-- {#if !atTop}
@@ -41,6 +45,8 @@ import { fly } from 'svelte/transition';
 import Modal from './SidebarModal.svelte';
 import SearchBar from './SearchBar.svelte';
 import { createEventDispatcher } from 'svelte';
+import IconButton from '@smui/icon-button';
+import { afterUpdate } from "svelte";
 
 export let show = false;
 let modal_show = false;
@@ -61,6 +67,7 @@ export let noteList: notes;
 
 
 const dispatch = createEventDispatcher<{toFocus:number}>();
+const dispatch1 = createEventDispatcher<{make:Boolean}>();
 
 function focusNewNote(id: number) {
     // report the new noteID
@@ -68,6 +75,17 @@ function focusNewNote(id: number) {
         id
     );
 }
+
+function newNote() {
+      // report the new noteID
+      dispatch1("make",
+          true
+      );
+
+      show = false;
+
+      console.log("here");
+  }
 
 
 </script>
