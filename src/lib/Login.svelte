@@ -4,10 +4,10 @@
     import LoginCard from "./LoginCard.svelte"
     import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher<{attempt:Boolean}>();
+	const dispatch = createEventDispatcher<{userID:string}>();
 
-	function forwardLoginAttempt(event: CustomEvent<Boolean>) {
-		dispatch("attempt",
+	function forwardLoginAttempt(event: CustomEvent<string>) {
+		dispatch("userID",
         event.detail
         );
 
@@ -17,7 +17,7 @@
 </script>
 
 <div class="centered-container">
-    <LoginCard on:attempt={forwardLoginAttempt}/>
+    <LoginCard on:userID={forwardLoginAttempt}/>
 </div>
 
 <style>
