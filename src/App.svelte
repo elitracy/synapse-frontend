@@ -41,9 +41,10 @@
 		uID = event.detail;
 
     await axios.get(url+'/:userId/notes', {
-      params: {userID: uID}
+      params: {uID}
     }).then(function (response){
       console.log(response);
+      if(response.data)
       for(let i = 1;i<response.data.length;i++)
         notes.concat({id: i, name:response.data[i].context, category:"general", delta:null});
     });

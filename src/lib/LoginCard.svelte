@@ -205,24 +205,35 @@
             })
             .then(async function (response) {
                 if((response.data==null)) {
+                    
                     loginSuccess = true
 
                     n = e.split('@')[0];
                     console.log(n);
 
-                    let createU = axios.create();
+                    const data = JSON.stringify({
+                    name: n,
+                    email: e,
+                    password: p
+                    });
 
-                    await createU.post(url+"/", {
-                        name: n,
-                        email: e,
-                        password: p
-                    })
+                    console.log(data);
+
+                    const config = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: url,
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    data : data
+                    };
+
+                    await axios(config)
                     .then(function (response) {
-                        console.log(response);
                     })
                     .catch(function (error) {
-                        console.log(error);
-                        loginSuccess = false;
+                    console.log(error);
                     });
 
                     // report the message
