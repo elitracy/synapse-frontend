@@ -122,37 +122,122 @@
 
 <!-- provides basic email + password login capabilities -->
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte'
+    import { createEventDispatcher } from 'svelte';
+    import axios from 'axios';
+    import EncryptRsa from 'encrypt-rsa';
 
-    let email: string
-    let pass: string
 
-    email = ''
-    pass = ''
+    let n: string
+    let e: string
+    let p: string
+
+    n = ''
+    e = ''
+    p = ''
+
 
     let loginSuccess = false
 
+    const encryptRsa = new EncryptRsa();
+    const { privateKey, publicKey } = encryptRsa.createPrivateAndPublicKeys();
+
     let hidden = false
+
+    const emailrg = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
+
+    const url = "https://api.synapsenote.com/api/users";
 
     const dispatch = createEventDispatcher<{ attempt: boolean }>()
 
-    function loginAttempt() {
+    async function loginAttempt() {
         // query the database to check UN against Pass
+        if(e.match(emailrg) && p!='') {
 
-        loginSuccess = true
-        // report the message
-        if (loginSuccess) dispatch('attempt', loginSuccess)
-        console.log('dispatched the attempt')
+            //check for existing user
+            let getEm = axios.create();
+
+            await getEm.post(url+"/email", {
+                email: e
+            })
+            .then(async function (response) {
+                if((response.data!=null)) {
+                    // let p1 = encryptRsa.encryptStringWithRsaPublicKey({ 
+                    //     text: response.data.password,   
+                    //     publicKey,
+                    //     });
+
+                    let p1 = response.data.password;
+
+                    if(p == p1)
+                        loginSuccess = true
+
+                    // report the message
+                    if (loginSuccess) dispatch('attempt', loginSuccess)
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+            
+    }
+}
+
+    function encrypt(e: Event & { currentTarget: EventTarget & HTMLInputElement; }) {
+        // p = encryptRsa.encryptStringWithRsaPublicKey({ 
+        //     text: e.currentTarget.value,   
+        //     publicKey,
+        //     });
+
+        p = e.currentTarget.value;
     }
 
-    function createAccount() {
+    async function createAccount() {
         // query the database to store UN and Pass
 
-        loginSuccess = true
-        // report the message
-        if (loginSuccess) dispatch('attempt', loginSuccess)
+        if(e.match(emailrg) && p!='') {
 
-        console.log('dispatched the attempt')
+            //check for existing user
+
+            let getEm = axios.create();
+
+            await getEm.post(url+"/email", {
+                email: e
+            })
+            .then(async function (response) {
+                if((response.data==null)) {
+                    loginSuccess = true
+
+                    n = e.split('@')[0];
+                    console.log(n);
+
+                    let createU = axios.create();
+
+                    await createU.post(url, {
+                        name: n,
+                        email: e,
+                        password: p
+                    })
+                    .then(function (response) {
+                        console.log(response);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                        loginSuccess = false;
+                    });
+
+                    // report the message
+                    if (loginSuccess) dispatch('attempt', loginSuccess)
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+
+
+            
+        } else {
+            // error message
+        }
     }
 
     function toggleToCreateAccount() {
@@ -174,14 +259,14 @@
                 id="email"
                 class="text-field"
                 placeholder="Email"
-                value={email} />
+                bind:value={e} />
             <input
                 type="password"
                 name="password"
                 id="pass"
                 class="text-field"
                 placeholder="Password"
-                value={pass} />
+                on:input={encrypt}/>
         </div>
 
         <div>
