@@ -54,12 +54,12 @@
 
   async function createNote(message: CustomEvent<note>) {
     console.log("here");
-    await axios.post(url1+'/', {
-      context: message.detail.name,
-      userId: uID
-    }).then(function (){
-      notes.push({id: notes.length, name:"New Note", category:"general", delta:null});
-    });
+    // await axios.post(url1+'/', {
+    //   context: message.detail.name,
+    //   userId: uID
+    // }).then(function (){
+       notes.push({id: notes.length, name:"New Note", category:"general", delta:null});
+    // });
   }
 
 </script>
