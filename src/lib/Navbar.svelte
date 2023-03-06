@@ -65,7 +65,12 @@
 
   
 
-  <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css">
+<!-- <link rel="stylesheet" href="src/bare.css"> -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/svelte-material-ui@6.0.0/bare.min.css"
+/>
+  <!-- <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css"> -->
   <!-- Material Icons -->
 <link
 rel="stylesheet"
