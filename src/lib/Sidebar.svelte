@@ -1,12 +1,12 @@
 {#if show}
     <!-- {#if atTop} -->
-        <nav transition:fly={{x: 250, opacity: 1}} style:top="{atTop ? '50px' : '0px'}">
+        <nav transition:fly={{x: 250, opacity: 1}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;">
             <SearchBar bind:textValue={tValue}/>
-            {#each notes as note}
+            {#each noteList as note}
                 {#if tValue === '' || note.name.toUpperCase().includes(tValue.toUpperCase())}
                     <button 
                         style="margin-bottom:10px" 
-                        on:click={() => {modal_show = true; show = false;}}>
+                        on:click={() => {modal_show = true; show = false; focusNewNote(note.id);}}>
                             {note.name}
                     </button>
                 {/if}
@@ -26,29 +26,50 @@
 
 <Modal bind:show={modal_show} />
 
-<script>
+<script lang="ts" context="module">
+  import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+  export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
+
+<script lang="ts">
 import { fly } from 'svelte/transition';
 import Modal from './SidebarModal.svelte';
 import SearchBar from './SearchBar.svelte';
+import { createEventDispatcher } from 'svelte';
 
 export let show = false;
 let modal_show = false;
 let atTop = true;
 let tValue = '';
 
-    window.addEventListener("scroll", function(){
-    if(window.scrollY==0){
-        atTop = true;
-    } else {
-        atTop = false;
-    }
-    });
+window.addEventListener("scroll", function(){
+  if(window.scrollY==0){
+      atTop = true;
+  } else {
+      atTop = false;
+  }
+  });
 
-    let notes = [
-        {name : "Note 1", category : "math"},
-        {name : "Note 2", category : "science"},
-        {name : "Note 3", category : "math"}
-    ]
+type notes = note[];
+
+export let noteList: notes;
+
+
+const dispatch = createEventDispatcher<{toFocus:number}>();
+
+function focusNewNote(id: number) {
+    // report the new noteID
+    dispatch("toFocus",
+        id
+    );
+}
+
+
 </script>
 		
 <style>
@@ -66,7 +87,7 @@ nav {
 button {
     border:1px thick black !important;
 }
-.top {
+/* .top {
     top:50px !important;
-}
+} */
 </style>

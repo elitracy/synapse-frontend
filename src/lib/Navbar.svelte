@@ -1,4 +1,41 @@
 
+<script lang="ts" context="module">
+  import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+  export type note = {
+        id: number;
+        name: string;
+        category: string;
+        delta: Delta | null;
+    };
+</script>
+
+<script lang="ts">
+  import TopAppBar, {
+    Row,
+    Section,
+    Title,
+    AutoAdjust,
+  } from '@smui/top-app-bar';
+  import IconButton from '@smui/icon-button';
+  import Sidebar from './Sidebar.svelte';
+  import { createEventDispatcher } from 'svelte';
+  
+  const dispatch = createEventDispatcher<{toFocus:number}>();
+
+  function toFocus(message: CustomEvent<number>) {
+      // report the new noteID
+      dispatch("toFocus",
+          message.detail
+      );
+  }
+ 
+  let topAppBar: TopAppBar;
+  let sidebar_show = false;
+
+  type notes = note[];
+
+  export let noteList: notes;
+</script>
 
 <TopAppBar bind:this={topAppBar} variant="short" style="background-color:#50656e;">
     <Row>
@@ -22,23 +59,11 @@
     /> -->
   </AutoAdjust>
 
-  <Sidebar bind:show={sidebar_show} />
+  <Sidebar bind:show={sidebar_show} noteList={noteList} on:toFocus={toFocus}/>
 
   
 
-  <script lang="ts">
-    import TopAppBar, {
-      Row,
-      Section,
-      Title,
-      AutoAdjust,
-    } from '@smui/top-app-bar';
-    import IconButton from '@smui/icon-button';
-    import Sidebar from './Sidebar.svelte';
-   
-    let topAppBar: TopAppBar;
-    let sidebar_show = false;
-  </script>
+  
 
 <!-- <link rel="stylesheet" href="src/bare.css"> -->
 <link
