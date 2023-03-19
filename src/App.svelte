@@ -26,13 +26,25 @@
   let note1: note;
   let note2: note;
   let note3: note;
+  let note4: note;
+  let note5: note;
+  let note6: note;
+  let note7: note;
+  let note8: note;
+  let note9: note;
   note1 = {id: 0, name:"Note 1", category:"CSCE 482", delta:d};
   note2 = {id: 1, name:"Note 2", category:"CSCE 447", delta:d};
   note3 = {id: 2, name:"Note 3", category:"CSCE 447", delta:d};
+  note4 = {id: 0, name:"Note 4", category:"CSCE 482", delta:d};
+  note5 = {id: 1, name:"Note 5", category:"CSCE 447", delta:d};
+  note6 = {id: 2, name:"Note 6", category:"CSCE 447", delta:d};
+  note7 = {id: 0, name:"Note 7", category:"CSCE 482", delta:d};
+  note8 = {id: 1, name:"Note 8", category:"CSCE 447", delta:d};
+  note9 = {id: 2, name:"Note 9", category:"CSCE 447", delta:d};
 
   type notes = note[];
   let notes = [
-        note1, note2, note3
+        note1, note2, note3, note4, note5, note6, note7, note8, note9
     ]
 
   let page = 0;
