@@ -1142,7 +1142,7 @@
 
 "@smui/card@^7.0.0-beta.0":
   version "7.0.0-beta.0"
-  resolved "https://registry.npmjs.org/@smui/card/-/card-7.0.0-beta.0.tgz"
+  resolved "https://registry.yarnpkg.com/@smui/card/-/card-7.0.0-beta.0.tgz#cf3d5d1ba1e648489080ac1a1dfb5e79b76c238f"
   integrity sha512-IxcmeDgfilsKsGbjHo1mGhHlw4jRksD7LudghWiSCvbKVOvg0ukAD2nOzNzXCa5LJEuODjHjoEC0GCRDTINLtg==
   dependencies:
     "@material/card" "^14.0.0"
