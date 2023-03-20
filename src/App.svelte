@@ -17,17 +17,22 @@
   import IconButton from '@smui/icon-button';
   import Navbar from './lib/Navbar.svelte';
   import axios from 'axios';
+  import NoteLanding from './lib/NoteLanding.svelte';
 
   import type Delta from "../node_modules/@types/quill/node_modules/quill-delta";
 
   let d = null;
 
   let note1: note;
-  note1 = {id: 0, name:"Note", category:"general", delta:d};
+  let note2: note;
+  let note3: note;
+  note1 = {id: 0, name:"Note 1", category:"CSCE 482", delta:d};
+  note2 = {id: 1, name:"Note 2", category:"CSCE 447", delta:d};
+  note3 = {id: 2, name:"Note 3", category:"CSCE 447", delta:d};
 
   type notes = note[];
   let notes = [
-        note1
+        note1, note2, note3
     ]
 
   let page = 0;
@@ -64,12 +69,13 @@
 
 </script>
 
-<main>
+
   
-  {#if page==0}
+  {#if page==-1}
     <Login on:userID={logIn}/>
   {/if}
-  {#if page==1}
-    <Landing noteList={notes} on:make={createNote}/>
+  {#if page==0}
+  <NoteLanding noteList={notes}/>
+    <!-- <Landing noteList={notes} on:make={createNote}/> -->
   {/if}
-</main>
+
