@@ -38,7 +38,7 @@
 
   let page = 1;
 
-  let landing = 1;
+  let landing = 0;
 
   let focusNote = notes[0];
 
@@ -74,7 +74,11 @@
 
   async function gotoNote(message: CustomEvent<note>) {
     focusNote = message.detail;
-    landing = 0;
+    landing = 1;
+  }
+
+  function gotoGraph() {
+    landing = 2;
   }
 
 </script>
@@ -89,7 +93,7 @@
     <NoteLanding noteList={notes} on:make={gotoNote}/>
     {/if}
     {#if landing==1}
-    <Landing noteList={notes} focusNote={focusNote} on:make={createNote}/>
+    <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph}/>
     {/if}
     {#if landing==2}
     <GraphLanding/>

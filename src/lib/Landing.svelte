@@ -40,12 +40,18 @@
         dispatch1('make', focusNote);
     }
 
+    let dispatch2 = createEventDispatcher<{graph:void}>();
+
+    function gotoGraph() {
+        dispatch2('graph');
+    }
+
 </script>
 
 <div class="container">
     <Navbar noteList={noteList} on:toFocus={toFocus} on:make={newNote}/>
     {#if displayNote}
-        <Note focusNote={focusNote}/>
+        <Note focusNote={focusNote} on:graph={gotoGraph}/>
     {/if}
 </div>
 

@@ -12,8 +12,14 @@
     import Quill from "quill";
     import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
 	import { afterUpdate } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    import FaHashtag from '../../node_modules/svelte-icons/fa/FaHashtag.svelte';
+    import GoGitCommit from 'svelte-icons/go/GoGitCommit.svelte';
 
     export let focusNote: note;
+
+    let dispatch = createEventDispatcher<{graph:void}>();
 
     let noteId: number;
     noteId = 0;
@@ -218,7 +224,11 @@
     }
 
     function makeTag() {
-        tag = true;
+        tag = !tag;
+    }
+
+    function gotoGraph() {
+        dispatch('graph');
     }
 
     let tag = false;
@@ -246,12 +256,14 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
-        <button on:click={makeTag}>tag</button>
+        <button class="ql-tag" on:click={makeTag}><FaHashtag /></button>
+        <button class="ql-tag" on:click={gotoGraph}><GoGitCommit /></button>
+        
         <!-- <button class="ql-image"></button> -->
         <!-- <button class="ql-video"></button> -->
     </div>
     {#if tag}
-        <input type="text">
+        <input type="text" class="taggen">
     {/if}
     <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
 
@@ -286,6 +298,12 @@
 
         padding: 0px;
     } */
+
+    .taggen{
+        position: absolute;
+        top: 50em;
+        left: 5em;
+    }
 
     .title{
         color: rgb(100,100,100);
