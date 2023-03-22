@@ -216,6 +216,12 @@
     function saveText() {
         focusNote.delta = quill.getContents();
     }
+
+    function makeTag() {
+        tag = true;
+    }
+
+    let tag = false;
     
     
 </script>
@@ -240,10 +246,13 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
-        <button class="ql-link"></button>
+        <button on:click={makeTag}>tag</button>
         <!-- <button class="ql-image"></button> -->
         <!-- <button class="ql-video"></button> -->
     </div>
+    {#if tag}
+        <input type="text">
+    {/if}
     <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
 
     </div>
@@ -307,6 +316,7 @@
     .page{
         background-color: white;
         min-width: 60vw;
+        max-width: 60vw;
         min-height: 100vw;
 
         color: black;

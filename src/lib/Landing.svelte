@@ -24,9 +24,7 @@
 
     export let noteList: notes;
 
-    let focusNote: note;
-
-    focusNote = noteList[0];
+    export let focusNote: note;
 
     function toFocus(message: CustomEvent<number>) {
         for (let index = 0; index < noteList.length; index++) {

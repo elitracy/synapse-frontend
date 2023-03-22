@@ -1,16 +1,6 @@
-<Navbar noteList={noteList} />
+<!-- <Navbar noteList={noteList} /> -->
 
-<div class="container">
-    <p style="font-size:4em">All Notes</p>
-    <p style="font-size:1em">Select a Note Below</p>
-    <br>
-    <br>
-    <br>
-    {#each noteList as note}
-        
-        <div class="notecard"><NoteCard noteName={note.name} noteCategory={note.category}/></div>
-    {/each}
-</div>
+
 
 
 <script lang="ts" context="module">
@@ -44,7 +34,7 @@
 
     focusNote = noteList[0];
 
-    function toFocus(message: CustomEvent<number>) {
+    function toFocus1(message: CustomEvent<number>) {
         for (let index = 0; index < noteList.length; index++) {
             const element = noteList[index];
             if(element.id == message.detail) {
@@ -52,6 +42,7 @@
             }
         }
 
+        newNote();
     }
 
     function newNote() {
@@ -60,8 +51,39 @@
 
 </script>
 
+<div class="container">
+    <p style="font-size:4em">All Notes</p>
+    <p style="font-size:1em">Select a Note Below</p>
+    <br>
+    <br>
+    <br>
+    {#each noteList as note}
+        <div class="notecard"><NoteCard noteName={note.name} noteCategory={note.category} noteId={note.id} on:id={toFocus1}/></div>
+    {/each}
+</div>
 
 
+<!-- <link rel="stylesheet" href="src/bare.css"> -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/svelte-material-ui@6.0.0/bare.min.css"
+/>
+  <!-- <link rel="stylesheet" href="node_modules/svelte-material-ui/bare.css"> -->
+  <!-- Material Icons -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/icon?family=Material+Icons"
+/>
+<!-- Roboto -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700"
+/>
+<!-- Roboto Mono -->
+<link
+rel="stylesheet"
+href="https://fonts.googleapis.com/css?family=Roboto+Mono"
+/>
 
 <style> 
 .container{

@@ -1,6 +1,6 @@
 {#if show}
     <!-- {#if atTop} -->
-        <nav transition:fly={{x: 250, opacity: 1}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;display:flex;flex-direction:column;align-items:center;">
+        <nav transition:fly={{x: 250, opacity: 0}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;display:flex;flex-direction:column;align-items:center;">
             <SearchBar bind:textValue={tValue}/>
             {#each noteList as note}
                 {#if tValue === '' || note.name.toUpperCase().includes(tValue.toUpperCase())}

@@ -157,7 +157,7 @@
             let getEm = axios.create();
 
             await getEm.post(url+"/email", {
-                email: e
+                email: e.toString()
             })
             .then(async function (response) {
                 if((response.data!=null)) {

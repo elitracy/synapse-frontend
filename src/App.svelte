@@ -20,6 +20,7 @@
   import NoteLanding from './lib/NoteLanding.svelte';
 
   import type Delta from "../node_modules/@types/quill/node_modules/quill-delta";
+    import GraphLanding from './lib/GraphLanding.svelte'
 
   let d = null;
 
@@ -35,7 +36,11 @@
         note1, note2, note3
     ]
 
-  let page = 0;
+  let page = 1;
+
+  let landing = 1;
+
+  let focusNote = notes[0];
 
   let uID = '';
 
@@ -67,15 +72,27 @@
     // });
   }
 
+  async function gotoNote(message: CustomEvent<note>) {
+    focusNote = message.detail;
+    landing = 0;
+  }
+
 </script>
 
 
   
-  {#if page==-1}
+  {#if page==0}
     <Login on:userID={logIn}/>
   {/if}
-  {#if page==0}
-  <NoteLanding noteList={notes}/>
-    <!-- <Landing noteList={notes} on:make={createNote}/> -->
+  {#if page==1}
+    {#if landing==0}
+    <NoteLanding noteList={notes} on:make={gotoNote}/>
+    {/if}
+    {#if landing==1}
+    <Landing noteList={notes} focusNote={focusNote} on:make={createNote}/>
+    {/if}
+    {#if landing==2}
+    <GraphLanding/>
+    {/if}
   {/if}
 

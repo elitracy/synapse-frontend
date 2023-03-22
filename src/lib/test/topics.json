@@ -1,0 +1,41 @@
+[{
+    "name":"math",
+    "subtopics": [
+        {
+            "topic": {
+                "name":"linear algebra",
+                "subtopics": []
+            }
+        },
+        {
+            "topic": {
+                "name":"calculus",
+                "subtopics": []
+            }
+        },
+        {
+            "topic": {
+                "name":"trig",
+                "subtopics": []
+            }
+        },
+        {
+            "topic": {
+                "name":"algebra",
+                "subtopics": []
+            }
+        },
+        {
+            "topic": {
+                "name":"complex analysis",
+                "subtopics": []
+            }
+        },
+        {
+            "topic": {
+                "name":"diff eq",
+                "subtopics": []
+            }
+        }
+    ]
+}]

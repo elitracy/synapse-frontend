@@ -1,7 +1,7 @@
 <div class="card-display">
     <div class="card-container">
       <Card>
-        <PrimaryAction on:click={() => clicked++}>
+        <PrimaryAction on:click={reportID}>
           <Media class="card-media-16x9" aspectRatio="16x9">
             <MediaContent>
               <div
@@ -16,19 +16,19 @@
               </div>
             </MediaContent>
           </Media>
-          <Content class="mdc-typography--body2">
+          <!-- <Content class="mdc-typography--body2">
             Add details here.
-          </Content>
+          </Content> -->
         </PrimaryAction>
         <Actions>
           <ActionButtons>
-            <Button on:click={() => clicked++}>
+            <!-- <Button on:click={() => clicked++}>
               <Label>Action</Label>
-            </Button>
+            </Button> -->
 
           </ActionButtons>
           <ActionIcons>
-            <IconButton
+            <!-- <IconButton
               on:click={() => clicked++}
               toggle
               aria-label="Add to favorites"
@@ -36,7 +36,7 @@
             >
               <Icon class="material-icons" on>favorite</Icon>
               <Icon class="material-icons">favorite_border</Icon>
-            </IconButton>
+            </IconButton> -->
             <IconButton
               class="material-icons"
               on:click={() => clicked++}
@@ -68,9 +68,18 @@
     } from '@smui/card';
     import Button, { Label } from '@smui/button';
     import IconButton, { Icon } from '@smui/icon-button';
+    import { createEventDispatcher } from 'svelte';
     let clicked = 0;
     export let noteName : string;
     export let noteCategory : string;
+    export let noteId: number;
+
+    const dispatch1 = createEventDispatcher<{id:number}>();
+
+    function reportID() {
+      dispatch1('id', noteId);
+    }
+
   </script>
   
   <style>
