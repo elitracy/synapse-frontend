@@ -9,6 +9,7 @@
         name: string;
         category: string;
         delta: Delta | null;
+        tgL: string[];
     };
 </script>
 

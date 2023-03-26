@@ -4,6 +4,7 @@
         name: string;
         category: string;
         delta: Delta | null;
+        tgL: string[];
     };
 </script>
 
@@ -218,6 +219,9 @@
     // function dist(pt: Point, mx:number, my:number) {
     //     return Math.pow(pt[0]-mx,2) + Math.pow(pt[1]-my,2);
     // }
+    let tagList: string[];
+    tagList = [];
+    let tagString = '';
 
     function saveText() {
         focusNote.delta = quill.getContents();
@@ -231,6 +235,14 @@
         dispatch('graph');
     }
 
+    function storeTag() {
+        if(tagString!='' && !tagList.includes(tagString)) {
+            tagList.push(tagString);
+            focusNote.tgL.push(tagString);
+        }
+        tagString = '';
+
+    }
     let tag = false;
     
     
@@ -256,30 +268,20 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
-        <button class="ql-tag" on:click={makeTag}><FaHashtag /></button>
-        <button class="ql-tag" on:click={gotoGraph}><GoGitCommit /></button>
+        <button on:click={makeTag}><FaHashtag /></button>
+        <button on:click={gotoGraph}><GoGitCommit /></button>
         
         <!-- <button class="ql-image"></button> -->
         <!-- <button class="ql-video"></button> -->
     </div>
     {#if tag}
-        <input type="text" class="taggen">
+        <input type="text" class="taggen" bind:value={tagString}>
+        <button class="taggen" on:click={storeTag}>Enter</button>
     {/if}
     <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
 
     </div>
 
-    <!-- <canvas
-            class="page" 
-            id="applet"
-            width="500px" 
-            height="375px" 
-            bind:this={canvas}
-            on:mousedown={controlPoint}
-            on:mousemove={movePoint}
-            on:dblclick={grabObj}
-            >
-    </canvas> -->
 
 </div>
 

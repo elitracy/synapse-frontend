@@ -8,6 +8,7 @@
       name: string;
       category: string;
       delta: Delta | null;
+      tgL: string[];
   };
 </script>
 
@@ -24,16 +25,29 @@
 
   let d = null;
 
+
   let note1: note;
   let note2: note;
   let note3: note;
-  note1 = {id: 0, name:"Note 1", category:"CSCE 482", delta:d};
-  note2 = {id: 1, name:"Note 2", category:"CSCE 447", delta:d};
-  note3 = {id: 2, name:"Note 3", category:"CSCE 447", delta:d};
+  let note4: note;
+  let note5: note;
+  let note6: note;
+  let note7: note;
+  let note8: note;
+  let note9: note;
+  note1 = {id: 0, name:"Note 1", category:"CSCE 482", delta:d, tgL:[]};
+  note2 = {id: 1, name:"Note 2", category:"CSCE 447", delta:d, tgL:[]};
+  note3 = {id: 2, name:"Note 3", category:"CSCE 447", delta:d, tgL:[]};
+  note4 = {id: 3, name:"Note 4", category:"CSCE 447", delta:d, tgL:[]};
+  note5 = {id: 4, name:"Note 5", category:"CSCE 447", delta:d, tgL:[]};
+  note6 = {id: 5, name:"Note 6", category:"CSCE 447", delta:d, tgL:[]};
+  note7 = {id: 6, name:"Note 7", category:"CSCE 447", delta:d, tgL:[]};
+  note8 = {id: 7, name:"Note 8", category:"CSCE 447", delta:d, tgL:[]};
+  note9 = {id: 8, name:"Note 9", category:"CSCE 447", delta:d, tgL:[]};
 
   type notes = note[];
   let notes = [
-        note1, note2, note3
+        note1, note2, note3, note4, note5
     ]
 
   let page = 1;
@@ -68,7 +82,7 @@
     //   context: message.detail.name,
     //   userId: uID
     // }).then(function (){
-       notes.push({id: notes.length, name:"New Note", category:"general", delta:null});
+       notes.push({id: notes.length, name:"New Note", category:"general", delta:null, tgL:[]});
     // });
   }
 
@@ -96,7 +110,7 @@
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph}/>
     {/if}
     {#if landing==2}
-    <GraphLanding/>
+    <GraphLanding noteList={notes}/>
     {/if}
   {/if}
 
