@@ -60,11 +60,14 @@
     let hovering: topic | null;
     hovering = null;
 
+    let ctx:CanvasRenderingContext2D | null;
+    ctx = null;
+
     onMount(() => {
         // get canvas context
         canvasElement.width = window.screen.availWidth*.6;
-        canvasElement.height = window.screen.availHeight*.7;
-        let ctx = canvasElement.getContext("2d")
+        canvasElement.height = window.screen.availHeight*.8;
+        ctx = canvasElement.getContext("2d")
 
         if(ctx) {
             initializePoints();
@@ -144,8 +147,8 @@
                                 ctx.ellipse(t[0],t[1],(g[i].size)*s,(g[i].size)*s, 0,0,2*Math.PI);
                                 ctx.closePath();
 
-                                ctx.lineWidth = 3;
-                                ctx.strokeStyle = 'rgb(215, 189, 226)';
+                                ctx.lineWidth = 4;
+                                ctx.strokeStyle = 'rgb(100, 100, 100)';
                                 ctx.stroke();
                                 ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
 
@@ -158,9 +161,9 @@
                     }
                 }
 
-                if(selected.length==2 && ctx) {
-                    setTimeout(()=>addEdge(),100);
-                }
+                // if(selected.length==2 && ctx) {
+                //     setTimeout(()=>addEdge(),100);
+                // }
                 
             }, 200);
 
@@ -197,60 +200,69 @@
 
         }
 
-        function addEdge() {
 
-            if(selected[0].tpL.includes(selected[1]) || selected[1].tpL.includes(selected[0])){
-                selected = [];
-                if(ctx) {
-                    ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
-                    drawTopics(ctx);
-                }
-                return;
-            }
-
-
-
-            // animate the edge creation
-            if(ctx) {
-                function animateEdge(ctx: CanvasRenderingContext2D | null, a:number, fc:number, pa:point, pb:point) {
-
-                    if(ctx) {
-                        ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
-                        drawTopicsAnimateEdge(ctx,a,fc, pa, pb);
-                    }
-
-                    if(a<fc)
-                        setTimeout(()=>requestAnimationFrame(()=>animateEdge(ctx,a+1,fc,pa,pb)), 5);
-                    else {
-                        selected[0].tpL.push(selected[1]);
-                        selected = [];
-                    }
-                    
-                }
-                let fc = 50;
-                let pa:point;
-                let pb:point;
-
-                pa = [0,0];
-                pb = [0,0];
-
-                let rtl1 = selected[0].root?.location;
-                let rtl2 = selected[1].root?.location;
-
-                if(selected[0].location && rtl1)
-                    pa = [selected[0].location[0]+rtl1[0],selected[0].location[1]+rtl1[1]];
-                if(selected[1].location && rtl2)
-                    pb = [selected[1].location[0]+rtl2[0],selected[1].location[1]+rtl2[1]];
-                requestAnimationFrame(()=>animateEdge(canvasElement.getContext("2d"), 1, fc,pa,pb));
-
-                
-            }
-
-
-        }
+        
         
     });
-    
+
+    function addEdge() {
+                    
+
+        if(selected[0].tpL.includes(selected[1]) || selected[1].tpL.includes(selected[0])){
+            selected = [];
+            if(ctx) {
+                ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                drawTopics(ctx);
+            }
+            return;
+        }
+
+
+
+        // animate the edge creation
+        if(ctx) {
+            function animateEdge(ctx: CanvasRenderingContext2D | null, a:number, fc:number, pa:point, pb:point) {
+
+                if(ctx) {
+                    ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                    drawTopicsAnimateEdge(ctx,a,fc, pa, pb);
+                }
+
+                if(a<fc)
+                    setTimeout(()=>requestAnimationFrame(()=>animateEdge(ctx,a+1,fc,pa,pb)), 5);
+                else {
+                    selected[0].tpL.push(selected[1]);
+
+                    selected[0].tpL = selected[0].tpL;
+                    selected[1].tpL.push(selected[0]);
+
+                    selected[1].tpL = selected[1].tpL;
+                    selected = [];
+                }
+                
+            }
+            let fc = 50;
+            let pa:point;
+            let pb:point;
+
+            pa = [0,0];
+            pb = [0,0];
+
+            let rtl1 = selected[0].root?.location;
+            let rtl2 = selected[1].root?.location;
+
+            if(selected[0].location && rtl1)
+                pa = [selected[0].location[0]+rtl1[0],selected[0].location[1]+rtl1[1]];
+            if(selected[1].location && rtl2)
+                pb = [selected[1].location[0]+rtl2[0],selected[1].location[1]+rtl2[1]];
+
+            requestAnimationFrame(()=>animateEdge(canvasElement.getContext("2d"), 1, fc,pa,pb));
+
+            
+        }
+
+    }
+
 
     function dist(p1:point, p2:point) {
         return Math.sqrt(Math.pow(p2[0]-p1[0],2)+Math.pow(p2[1]-p1[1],2));
@@ -324,7 +336,7 @@
         }
 
         for(let i = 0;i<g.length;i++) {
-            if(g[i]!=null && g[i]?.tpL.length!=0) {
+            if(g[i]!=null && g[i].tpL.length!=0) {
                 let p = g[i].location;
                 let pr = g[i].root?.location;
                 if(p && pr) {
@@ -332,7 +344,7 @@
                     for(let j = 0;j<g[i].tpL.length;j++) {
                         if(g[i].tpL[j]) {
                             let p1 = g[i].tpL[j].location;
-                            let pr1 = g[i].root?.location;
+                            let pr1 = g[i].tpL[j].root?.location;
                             if(p1 && pr1){
 
                                 p1 = [pr1[0]+p1[0], pr1[1]+p1[1]];
@@ -498,7 +510,7 @@
                     for(let j = 0;j<g[i].tpL.length;j++) {
                         if(g[i].tpL[j]) {
                             let p1 = g[i].tpL[j].location;
-                            let pr1 = g[i].root?.location;
+                            let pr1 = g[i].tpL[j].root?.location;
                             if(p1 && pr1){
 
                                 p1 = [pr1[0]+p1[0], pr1[1]+p1[1]];
@@ -515,6 +527,7 @@
                                 ctx.strokeStyle = 'rgba(0,0,0,0.3)';
                                 
                                 ctx.stroke();
+
                             }
                         }
                         ctx.moveTo(...p);
@@ -541,7 +554,7 @@
         ctx.bezierCurveTo(c1[0],c1[1],c2[0],c2[1],pb[0],pb[1]);
 
         ctx.lineWidth = 5;
-        ctx.strokeStyle = 'rgba(0,0,0,'+a/fc*.3+')';
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
         
         ctx.stroke();
 
@@ -735,12 +748,40 @@
         </canvas>
         <div class="side">
             {#if selected.length==1}
-                <div class="selection">
+                <div class="selection1">
                     {selected[0].name}
                 </div>
             {/if}
+            {#if selected.length==2}
+                <div class="selection1">
+                    <div class="title">
+                        {selected[0].name}
+                    </div>
+                    {#each selected[0].tpL as tg}
+                        <div class="edges">
+                            {tg}
+                        </div>
+                    {/each}
+                    
+                </div>
+                <div class="selection2">
+                    <div class="title">
+                        {selected[1].name}
+                    </div>
+                    {#each selected[1].tpL as tg}
+                        <div class="edges">
+                            {tg}
+                        </div>
+                    {/each}
+                </div>
+                <div class="selectionH">
+                    <button on:click={addEdge}>
+                        Create Edge
+                    </button>
+                </div>
+            {/if}
             {#if hovering!=null}
-                <div class="selection">
+                <div class="selectionH">
                     {hovering.name}
                 </div>
             {/if}
@@ -759,7 +800,7 @@
 
     
 
-    margin-top: 5em;
+    /* margin-top: 5em; */
 }
 .selection1{
     display: flex;
@@ -768,8 +809,34 @@
     align-items: center;
 
     font-size: 3em;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 20vw;
+    height: 100vh;
+
+    background-color: black;
 }
 .selection2{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 3em;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 20vw;
+    height: 100vh;
+
+    background-color: black;
+}
+.selectionH{
     display: flex;
     flex-direction: row;
     justify-content: center;
