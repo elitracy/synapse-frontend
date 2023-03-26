@@ -1,7 +1,10 @@
 {#if show}
     <!-- {#if atTop} -->
-        <nav transition:fly={{x: 250, opacity: 0}} style:top="{atTop ? '50px' : '0px'}" style="z-index=1;display:flex;flex-direction:column;align-items:center;">
-            <SearchBar bind:textValue={tValue}/>
+        <nav transition:fly={{x: -250, opacity: 1}} style:top="{atTop ? '0px' : '0px'}" style="z-index=1;display:flex;flex-direction:column;align-items:center;">
+            <div style="margin-top:50px;">
+                <SearchBar bind:textValue={tValue}/>
+            </div>
+            
             {#each noteList as note}
                 {#if tValue === '' || note.name.toUpperCase().includes(tValue.toUpperCase())}
                     <button 
@@ -95,10 +98,10 @@ function newNote() {
 nav {
   position: fixed;
   /* top: 0; */
-  right: 0;
+  left: 0;
   height: 100%;
   padding: 2rem 1rem 0.6rem;
-  border-left: 1px solid #aaa;
+  border-right: 1px solid #aaa;
   background: white;
   overflow-y: auto;
 	width: 10rem;
