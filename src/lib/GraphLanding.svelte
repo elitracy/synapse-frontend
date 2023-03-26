@@ -62,7 +62,7 @@
 
     onMount(() => {
         // get canvas context
-        canvasElement.width = window.screen.availWidth*.9;
+        canvasElement.width = window.screen.availWidth*.6;
         canvasElement.height = window.screen.availHeight*.7;
         let ctx = canvasElement.getContext("2d")
 
@@ -730,27 +730,21 @@
 </script>
 
 <div class="container">
-    <canvas bind:this={canvasElement} width="1000" height="700">
+        <canvas bind:this={canvasElement} width="1000" height="700">
 
-    </canvas>
-
-    {#if selected.length==1}
-        <div class="selection">
-            {selected[0].name}
+        </canvas>
+        <div class="side">
+            {#if selected.length==1}
+                <div class="selection">
+                    {selected[0].name}
+                </div>
+            {/if}
+            {#if hovering!=null}
+                <div class="selection">
+                    {hovering.name}
+                </div>
+            {/if}
         </div>
-    {/if}
-    {#if hovering!=null}
-        <div class="selection">
-            {hovering.name}
-        </div>
-    {/if}
-
-    <!-- {#if selected.length==2}
-        <div class="selection">
-            {selected[0].name+" "}{selected[1].name}
-        </div>
-        <button></button>
-    {/if} -->
     
 </div>
 
@@ -763,9 +757,19 @@
 
     border-radius: 5px;
 
+    
+
     margin-top: 5em;
 }
-.selection{
+.selection1{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 3em;
+}
+.selection2{
     display: flex;
     flex-direction: row;
     justify-content: center;
