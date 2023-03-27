@@ -27,25 +27,56 @@
 
 <script lang="ts" src="./test/topics.json">
     import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+    import { createEventDispatcher } from 'svelte';
 
-    export let noteList;
+    export let noteList: note[];
   
     let g: topic[];
 
     g = [];
 
+    let scale = 1;
 
-    function makeNodes(ntL: note[]){
+    
+
+
+    function makeNodes(){
+        let ntL = noteList;
+
+        let roots = [];
         for(let k = 0;k<ntL.length;k++) {
-            g.push({size:ntL[k].tgL.length*4+10,name:ntL[k].name, tpL:[], root:null,location:null, color:null});
+            g.push({size:ntL[k].tgL.length*2+10,name:ntL[k].name, tpL:[], root:null,location:null, color:null});
+
+            roots.push(g.length-1);
+
             let ind = g.length-1;
             for(let i = 0;i<ntL[k].tgL.length;i++) {
-                g.push({size:5,name:ntL[k].tgL[i], tpL:[], root:g[ind],location:null, color:null});
+                g.push({size:3,name:ntL[k].tgL[i], tpL:[], root:g[ind],location:null, color:null});
+            }
+        }
+
+        for(let k = 0;k<roots.length;k++) {
+
+            for(let l = 0;l<ntL.length;l++) {
+                if(k!=l) {
+                    for(let i = 0;i<ntL[k].tgL.length;i++) {
+                        if(ntL[l].tgL.includes(ntL[k].tgL[i])) {
+                            g[roots[k]].tpL.push(g[roots[l]]);
+
+                            console.log("here");
+                        }
+                    }
+                }
+                
             }
         }
     }
 
-    makeNodes(noteList)
+    onMount(async () => {
+        makeNodes();
+
+    });
+
 
     let s = 6;
 
@@ -63,10 +94,30 @@
     let ctx:CanvasRenderingContext2D | null;
     ctx = null;
 
+    let edgeRelation:string;
+
+
+    function scaleup() {
+        scale+=.1;
+        if(ctx) {
+            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+            drawTopics(ctx);
+        }
+    }
+    function scaledown() {
+        scale-=.1;
+        if(ctx) {
+            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+            drawTopics(ctx);
+        }
+    }
+
+
+
     onMount(() => {
         // get canvas context
-        canvasElement.width = window.screen.availWidth*.6;
-        canvasElement.height = window.screen.availHeight*.8;
+        canvasElement.width = window.screen.availWidth;
+        canvasElement.height = window.screen.availHeight*.9;
         ctx = canvasElement.getContext("2d")
 
         if(ctx) {
@@ -172,6 +223,7 @@
         
         }
 
+
         canvasElement.ondblclick = function(e) {
 
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
@@ -274,7 +326,43 @@
         
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
 
-        
+        ctx.scale(scale,scale);
+
+        for(let i = 0;i<g.length;i++) {
+            if(g[i].root==null && g[i].tpL.length!=0) {
+                let p = g[i].location;
+                if(p) {
+                    p = [p[0], p[1]];
+                    for(let j = 0;j<g[i].tpL.length;j++) {
+                        if(g[i].tpL[j]) {
+                            let p1 = g[i].tpL[j].location;
+                            if(p1){
+
+                                p1 = [p1[0], p1[1]];
+
+                                let r = 50;
+
+                                let angle = anglebtw(p,p1);
+
+
+                                //let c1 = [0.2*(p1[0]-p[0])+p[0] - Math.cos(angle+Math.PI/2)*r,0.2*(p1[1]-p[1])+p[1] - Math.sin(angle+Math.PI/2)*r];
+                                //let c2 = [0.8*(p1[0]-p[0])+p[0] + Math.cos(angle+Math.PI/2)*r,0.8*(p1[1]-p[1])+p[1] + Math.sin(angle+Math.PI/2)*r];
+
+                                ctx.beginPath();
+                                ctx.moveTo(...p);
+                                ctx.lineTo(p1[0],p1[1]);
+
+                                ctx.lineWidth = 5;
+                                ctx.strokeStyle = 'rgba(100,100,100,.1)';
+                                
+                                ctx.stroke();
+                            }
+                        }
+                        ctx.moveTo(...p);
+                    }
+                }
+            }
+        }
 
         for(let i = 0;i<g.length;i++) {
 
@@ -289,29 +377,32 @@
                     ctx.ellipse(p[0],p[1],(num)*s,(num)*s, 0,0,2*Math.PI);
                     ctx.closePath();
 
-                    var gradient = ctx.createRadialGradient(p[0],p[1], num*s-5, p[0],p[1], num*s);
+                    ctx.fillStyle = "rgb(179, 200, 200)";
+                    ctx.fill();
+
+                    var gradient = ctx.createRadialGradient(p[0],p[1], num*s-2, p[0],p[1], num*s);
                     if(g[i].color) {
                         let c = g[i].color;
                         if(c)
                             gradient.addColorStop(0, c);
                     } else {
-                        g[i].color = `rgb(
-                                    ${Math.random()*(50)+200},
-                                    ${Math.random()*(50)+200},
-                                    ${Math.random()*(50)+200}, 0.7)`;
+                        g[i].color = `hsla(
+                                    ${Math.random()*(360)},
+                                    ${100}%,
+                                    ${75}%, 0.1)`;
                         let c = g[i].color;
                         if(c)
                             gradient.addColorStop(0, c); 
                     }
                                 
-                    gradient.addColorStop(1, 'gray');
+                    gradient.addColorStop(1, 'black');
 
                     ctx.fillStyle = gradient;
 
                     
                     ctx.fill();
 
-                    ctx.fillStyle = 'white';
+                    ctx.fillStyle = 'black';
                     ctx.font = "30px Arial";
 
                     ctx.textAlign = 'center';
@@ -362,7 +453,7 @@
                                 ctx.lineTo(p1[0],p1[1]);
 
                                 ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                                ctx.strokeStyle = 'rgba(0,0,0,1)';
                                 
                                 ctx.stroke();
                             }
@@ -435,6 +526,8 @@
             }
 
 
+            ctx.scale(1/scale,1/scale);
+
         ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
     }
 
@@ -442,7 +535,43 @@
         
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
 
-        
+        ctx.scale(scale,scale);
+
+        for(let i = 0;i<g.length;i++) {
+            if(g[i].root==null && g[i].tpL.length!=0) {
+                let p = g[i].location;
+                if(p) {
+                    p = [p[0], p[1]];
+                    for(let j = 0;j<g[i].tpL.length;j++) {
+                        if(g[i].tpL[j]) {
+                            let p1 = g[i].tpL[j].location;
+                            if(p1){
+
+                                p1 = [p1[0], p1[1]];
+
+                                let r = 50;
+
+                                let angle = anglebtw(p,p1);
+
+
+                                //let c1 = [0.2*(p1[0]-p[0])+p[0] - Math.cos(angle+Math.PI/2)*r,0.2*(p1[1]-p[1])+p[1] - Math.sin(angle+Math.PI/2)*r];
+                                //let c2 = [0.8*(p1[0]-p[0])+p[0] + Math.cos(angle+Math.PI/2)*r,0.8*(p1[1]-p[1])+p[1] + Math.sin(angle+Math.PI/2)*r];
+
+                                ctx.beginPath();
+                                ctx.moveTo(...p);
+                                ctx.lineTo(p1[0],p1[1]);
+
+                                ctx.lineWidth = 5;
+                                ctx.strokeStyle = 'rgba(100,100,100,.1)';
+                                
+                                ctx.stroke();
+                            }
+                        }
+                        ctx.moveTo(...p);
+                    }
+                }
+            }
+        }
 
         for(let i = 0;i<g.length;i++) {
 
@@ -457,22 +586,26 @@
                     ctx.ellipse(p[0],p[1],(num)*s,(num)*s, 0,0,2*Math.PI);
                     ctx.closePath();
 
-                    var gradient = ctx.createRadialGradient(p[0],p[1], num*s-5, p[0],p[1], num*s);
+
+                    ctx.fillStyle = "rgb(179, 200, 200)";
+                    ctx.fill();
+
+                    var gradient = ctx.createRadialGradient(p[0],p[1], num*s-2, p[0],p[1], num*s);
                     if(g[i].color) {
                         let c = g[i].color;
                         if(c)
                             gradient.addColorStop(0, c);
                     } else {
-                        g[i].color = `rgb(
-                                    ${Math.random()*(50)+200},
-                                    ${Math.random()*(50)+200},
-                                    ${Math.random()*(50)+200}, 0.7)`;
+                        g[i].color = `hsla(
+                                    ${Math.random()*(360)},
+                                    ${100}%,
+                                    ${75}%, 0.1)`;
                         let c = g[i].color;
                         if(c)
                             gradient.addColorStop(0, c); 
                     }
                                 
-                    gradient.addColorStop(1, 'gray');
+                    gradient.addColorStop(1, 'black');
 
                     ctx.fillStyle = gradient;
 
@@ -491,7 +624,7 @@
 
                     ctx.textAlign = 'center';
 
-                    ctx.fillStyle = 'white';
+                    ctx.fillStyle = 'black';
                     ctx.font = "30px Arial";
                     ctx.fillText(g[i].name,p[0]+addx,p[1]+addy, 200);
                 }
@@ -524,7 +657,7 @@
                                 ctx.lineTo(p1[0],p1[1]);
 
                                 ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                                ctx.strokeStyle = 'rgba(0,0,0,1)';
                                 
                                 ctx.stroke();
 
@@ -544,7 +677,7 @@
 
         pb = [(a/fc)*(pb[0]-pa[0])+pa[0], (a/fc)*(pb[1]-pa[1])+pa[1]];
 
-        let coef = Math.sin(Math.PI/2+Math.PI/2*(a/fc));
+        let coef = 1*Math.sin(Math.PI/2+Math.PI/2*(a/fc));
 
         let c1 = [0.7*(pb[0]-pa[0])+pa[0] - coef*Math.cos(angle+Math.PI/2)*r,0.7*(pb[1]-pa[1])+pa[1] - coef*Math.sin(angle+Math.PI/2)*r];
         let c2 = [0.9*(pb[0]-pa[0])+pa[0] + coef*Math.cos(angle+Math.PI/2)*r,0.9*(pb[1]-pa[1])+pa[1] + coef*Math.sin(angle+Math.PI/2)*r];
@@ -554,7 +687,7 @@
         ctx.bezierCurveTo(c1[0],c1[1],c2[0],c2[1],pb[0],pb[1]);
 
         ctx.lineWidth = 5;
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
         
         ctx.stroke();
 
@@ -620,6 +753,8 @@
             }
 
 
+            ctx.scale(1/scale,1/scale);
+
         ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
     }
 
@@ -681,7 +816,7 @@
 
                 p = [0, 0];
 
-                for(let k = 1;k<10;k++) {
+                for(let k = 1;k<20;k++) {
                     let done = false;
                     let m = 2*Math.PI*Math.random();
                     for(let j = m;j<2*Math.PI+m;j+=Math.PI/3+Math.random()) {
@@ -691,9 +826,8 @@
                             let rtl = rts[l].location;
                             if(rtl)
                             if(((dist(rtl,p)<(rts[l].size+g[i].size+10)*s))) {
-                                p = [rr/10*k*Math.cos(j), -rr/10*k*Math.sin(j)];
+                                p = [rr/10*k*Math.cos(j), -rr/20*k*Math.sin(j)];
                                 done = false;
-                                console.log(rtl + " " + p);
                                 break;
                             }
                             done = true;
@@ -739,6 +873,12 @@
         return false;
     }
 
+    let back = createEventDispatcher<{back:void}>();
+
+    function backToLanding() {
+        back("back");
+    }
+
 
 </script>
 
@@ -758,8 +898,8 @@
                         {selected[0].name}
                     </div>
                     {#each selected[0].tpL as tg}
-                        <div class="edges">
-                            {tg}
+                        <div class="edges" style="font-size:1em;">
+                            -{tg.name}
                         </div>
                     {/each}
                     
@@ -769,22 +909,36 @@
                         {selected[1].name}
                     </div>
                     {#each selected[1].tpL as tg}
-                        <div class="edges">
-                            {tg}
+                        <div class="edges" style="font-size:1em;">
+                            -{tg.name}
                         </div>
                     {/each}
                 </div>
+                <div class="relation" contenteditable="true" bind:textContent={edgeRelation}>
+                    is the same as 
+                </div>
                 <div class="selectionH">
                     <button on:click={addEdge}>
-                        Create Edge
+                        Connect
                     </button>
                 </div>
             {/if}
-            {#if hovering!=null}
+            {#if hovering!=null && selected.length!=2}
                 <div class="selectionH">
                     {hovering.name}
                 </div>
             {/if}
+        </div>
+
+        <div class="landing">
+            <button on:click={backToLanding}>Note Landing</button>
+        </div>
+
+        <div class="scaleup">
+            <button on:click={scaleup}>+</button>
+        </div>
+        <div class="scaledown">
+            <button on:click={scaledown}>-</button>
         </div>
     
 </div>
@@ -798,50 +952,143 @@
 
     border-radius: 5px;
 
+    background-color: rgb(179, 200, 200);
+
     
 
     /* margin-top: 5em; */
 }
 .selection1{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 
     font-size: 3em;
 
     position: absolute;
-    top: 30vh;
-    left: 0;
+    top: 0vh;
+    left: 10vw;
 
-    width: 20vw;
-    height: 40vh;
+    width: 50vw;
+    height: 10vh;
 
-    background-color: black;
+    color: #242424;
+
+    background-color: transparent;
 }
 .selection2{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 
     font-size: 3em;
 
     position: absolute;
-    top: 30vh;
-    right: 0;
+    top: 0vh;
+    right: 10vw;
 
-    width: 20vw;
-    height: 40vh;
+    width: 50vw;
+    height: 10vh;
 
-    background-color: black;
+    color: #242424;
+
+    background-color: transparent;
 }
 .selectionH{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    max-width: 60vw;
+    min-width: 60vw;
+
+    background-color: transparent;
+    z-index: 2;
+    position: absolute;
+    bottom: 10vh;
+    left:20vw;
+
+
+    color: #242424;
+
+    font-size: 2em;
+}
+
+.landing{
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
 
-    font-size: 3em;
+
+    background-color: transparent;
+    z-index: 2;
+    position: absolute;
+    bottom: 5vh;
+    left:5vw;
+
+    font-size: 2em;
+}
+
+.scaleup{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+
+    background-color: transparent;
+    z-index: 2;
+    position: absolute;
+    bottom: 5vh;
+    right:10vw;
+
+    font-size: 2em;
+}
+.scaledown{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+
+    background-color: transparent;
+    z-index: 2;
+    position: absolute;
+    bottom: 5vh;
+    right:5vw;
+
+    font-size: 2em;
+}
+
+.relation{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+
+    background-color: transparent;
+    z-index: 2;
+    position: absolute;
+
+    top: 0vh;
+    right: 35vw;
+
+    width: 30vw;
+    height: 10vh;
+
+
+    color: #242424;
+
+    font-size: 2em;
+}
+.edges {
+    color: #242424;
+
+    font-size: 1em;
 }
 </style>

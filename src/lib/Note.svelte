@@ -17,6 +17,7 @@
 
     import FaHashtag from '../../node_modules/svelte-icons/fa/FaHashtag.svelte';
     import GoGitCommit from 'svelte-icons/go/GoGitCommit.svelte';
+    import FaRegSave from 'svelte-icons/fa/FaRegSave.svelte'
 
     export let focusNote: note;
 
@@ -80,6 +81,9 @@
         }
 
 
+        if(focusNote.ops)
+            loadText(focusNote.ops);
+
     });
 
     afterUpdate(async () => {
@@ -88,23 +92,28 @@
             loadText(focusNote.ops);
             noteId = focusNote.id;
             title = focusNote.name;
+            hardSave();
         } else if(focusNote.ops==null && noteId != focusNote.id) {
             console.log("updating display contents to nothing");
             quill.setText("");
             noteId = focusNote.id;
             title = focusNote.name;
+            hardSave();
         }
-        if(focusNote.name!=title)
+        if(focusNote.name!=title) {
             focusNote.name = title;
+            hardSave();
+        }
 
     });
 
     
     let tagList: string[];
     tagList = [];
-    let tagString = '';
 
     let chngCount = 0;
+
+    tagList = [];
 
     import axios from 'axios';
   
@@ -113,6 +122,8 @@
 
     async function hardSave() {
         chngCount = 0;
+
+
         // check if not there
         if(focusNote.id!="") {
             await axios.put(url1+'/content/'+focusNote.id, {
@@ -122,17 +133,26 @@
             }).catch(function (error){
                 console.log(error);
             });
-        } else {
-            await axios.post(url1+'/', {
-                content: focusNote.ops,
-                userId: uID,
-                title: focusNote.name,
-                isPublic: true
-            }).then(function (response){
-                focusNote.id = response.data.id;
+
+            await axios.put(url1+'/title/'+focusNote.id, {
+                title: focusNote.name
+            }).then(function (){
+                console.log('creating note');
             }).catch(function (error){
                 console.log(error);
             });
+        }
+
+
+        let splt = focusNote.ops?.split(/#/);
+        tagList = [];
+        if(splt && splt.length>1){
+            for(let i = 1;i<splt.length;i+=2) {
+                tagList.push(splt[i]);
+            }
+
+            console.log(tagList);
+            focusNote.tgL = tagList;
         }
         
     }
@@ -140,8 +160,12 @@
     function saveText() {
         focusNote.ops = JSON.stringify(quill.getContents().ops);
 
+
         chngCount++;
-        hardSave();
+
+        if(chngCount>10)
+            hardSave();
+
     }
 
     function loadText(ops:string) {
@@ -150,23 +174,12 @@
         quill.setContents(d1);
     }
 
-    function makeTag() {
-        tag = !tag;
-    }
 
     function gotoGraph() {
         dispatch('graph');
     }
 
-    function storeTag() {
-        if(tagString!='' && !tagList.includes(tagString)) {
-            tagList.push(tagString);
-            focusNote.tgL.push(tagString);
-        }
-        tagString = '';
 
-    }
-    let tag = false;
     
     
 </script>
@@ -191,14 +204,13 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
+        <button class="ql-save" on:click={hardSave}><FaRegSave/></button>
+        <button class="ql-graph" on:click={gotoGraph}><GoGitCommit /></button>
         
         <!-- <button class="ql-image"></button> -->
         <!-- <button class="ql-video"></button> -->
     </div>
-    {#if tag}
-        <input type="text" class="taggen" bind:value={tagString}>
-        <button class="taggen" on:click={storeTag}>Enter</button>
-    {/if}
+
     
     <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
 

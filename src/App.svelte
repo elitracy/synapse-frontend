@@ -29,16 +29,13 @@
   let note1: note;
   note1 = {id: "", name:"New Note", category:"general", ops:d, tgL:[]};
 
-  type notes = note[];
-  let notes = [
-        note1
-    ]
+  let notes: note[];
 
   let page = 0;
 
   let landing = 0;
 
-  let focusNote = notes[0];
+  let focusNote: note;
 
   let uID = '';
 
@@ -52,13 +49,25 @@
       
     }).then(function (response){
 
-      console.log(response.data);
-      if(response.data)
+      page = -1;
+
+
+
+      if(response.data) {
+        notes = [];
         for(let i = 0;i<response.data.length;i++) {
-          notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:[]});
-          console.log(i);
+          let splt = response.data[i].content?.split(/#/);
+          let tagList: string[];
+          tagList = [];
+          if(splt && splt.length>1){
+              for(let i = 1;i<splt.length;i+=2) {
+                  tagList.push(splt[i]);
+              }
+          }
+          notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:tagList});
         }
-    }).catch(function (error){
+    }
+  }).catch(function (error){
       console.log(error);
     });
 
@@ -78,6 +87,10 @@
     landing = 2;
   }
 
+  function gotoLanding() {
+    landing = 0;
+  }
+
 </script>
 
 
@@ -87,13 +100,13 @@
   {/if}
   {#if page==1}
     {#if landing==0}
-    <NoteLanding noteList={notes} on:make={gotoNote}/>
+    <NoteLanding noteList={notes} on:make={gotoNote} uID={uID}/>
     {/if}
     {#if landing==1}
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
     {/if}
     {#if landing==2}
-    <GraphLanding noteList={notes}/>
+    <GraphLanding noteList={notes} on:back={gotoLanding}/>
     {/if}
   {/if}
 
