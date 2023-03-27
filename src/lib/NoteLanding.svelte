@@ -26,6 +26,7 @@
 
     let displayNote = true;
     const dispatch1 = createEventDispatcher<{make:note}>();
+    const dispatch2 = createEventDispatcher<{changeNoteList:note[]}>();
 
     export let uID: string;
     type notes = note[];
@@ -85,10 +86,13 @@
 
     function newList(message: CustomEvent<string>) {
         noteList = noteList.filter(n => n.id!=message.detail);
+
+        dispatch2("changeNoteList",noteList);
     }
 
     function newNote() {
         dispatch1('make', focusNote);
+        dispatch2("changeNoteList",noteList);
     }
 
 </script>

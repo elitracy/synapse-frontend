@@ -20,6 +20,8 @@
   import axios from 'axios';
   import NoteLanding from './lib/NoteLanding.svelte';
 
+  import { afterUpdate } from 'svelte';
+
   import type Delta from "../node_modules/@types/quill/node_modules/quill-delta";
   import GraphLanding from './lib/GraphLanding.svelte'
 
@@ -91,6 +93,14 @@
     landing = 0;
   }
 
+  function setNoteList(message: CustomEvent<note[]>) {
+    notes = message.detail;
+  }
+
+  afterUpdate(async () => {
+    notes = notes;
+  });
+
 </script>
 
 
@@ -100,7 +110,7 @@
   {/if}
   {#if page==1}
     {#if landing==0}
-    <NoteLanding noteList={notes} on:make={gotoNote} uID={uID}/>
+    <NoteLanding noteList={notes} on:make={gotoNote} uID={uID} on:changeNoteList={setNoteList}/>
     {/if}
     {#if landing==1}
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
