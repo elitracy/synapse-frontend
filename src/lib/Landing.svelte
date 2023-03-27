@@ -1,11 +1,11 @@
 <script lang="ts" context="module">
     export type note = {
-        id: number;
-        name: string;
-        category: string;
-        delta: Delta | null;
-        tgL: string[];
-    };
+      id: string;
+      name: string;
+      category: string;
+      ops: string | null;
+      tgL: string[];
+  };
 </script>
 
 <script lang="ts">
@@ -27,7 +27,9 @@
 
     export let focusNote: note;
 
-    function toFocus(message: CustomEvent<number>) {
+    export let uID: string;
+
+    function toFocus(message: CustomEvent<string>) {
         for (let index = 0; index < noteList.length; index++) {
             const element = noteList[index];
             if(element.id == message.detail) {
@@ -52,7 +54,7 @@
 <div class="container">
     <Navbar noteList={noteList} on:toFocus={toFocus} on:make={newNote}/>
     {#if displayNote}
-        <Note focusNote={focusNote} on:graph={gotoGraph}/>
+        <Note focusNote={focusNote} on:graph={gotoGraph} uID={uID}/>
     {/if}
 </div>
 

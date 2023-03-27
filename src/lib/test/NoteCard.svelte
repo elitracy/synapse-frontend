@@ -72,9 +72,9 @@
     let clicked = 0;
     export let noteName : string;
     export let noteCategory : string;
-    export let noteId: number;
+    export let noteId: string;
 
-    const dispatch1 = createEventDispatcher<{id:number}>();
+    const dispatch1 = createEventDispatcher<{id:string}>();
 
     function reportID() {
       dispatch1('id', noteId);

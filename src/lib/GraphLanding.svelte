@@ -11,10 +11,10 @@
     };
 
     export type note = {
-        id: number;
+        id: string;
         name: string;
         category: string;
-        delta: Delta | null;
+        ops: string | null;
         tgL: string[];
     };
 
@@ -811,11 +811,11 @@
     font-size: 3em;
 
     position: absolute;
-    top: 0;
+    top: 30vh;
     left: 0;
 
     width: 20vw;
-    height: 100vh;
+    height: 40vh;
 
     background-color: black;
 }
@@ -828,11 +828,11 @@
     font-size: 3em;
 
     position: absolute;
-    top: 0;
+    top: 30vh;
     right: 0;
 
     width: 20vw;
-    height: 100vh;
+    height: 40vh;
 
     background-color: black;
 }

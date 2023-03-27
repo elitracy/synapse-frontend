@@ -14,7 +14,7 @@
         background-size: contain;
     }
     .card-container {
-        min-height: 450px;
+        min-height: 700px;
         height: 65vh;
         min-width: 350px;
         width: 60vw;
@@ -38,7 +38,7 @@
     .bounds {
         min-height: 240px;
         height: 20vw;
-        min-width: 270px;
+        min-width: 400px;
         max-width: min(40vw, 45vh);
 
         display: flex;
@@ -118,6 +118,17 @@
         outline: none !important;
         border: 1px solid hsl(0, 66%, 24%);
     }
+
+    .error {
+        margin-top: 10px;
+        color:hsl(0, 80%, 50%);
+        font-weight: 400;
+        font-size: medium;
+
+        background-color: #242424;
+        border-radius: 3px;
+        padding: 2px;
+    }
 </style>
 
 <!-- provides basic email + password login capabilities -->
@@ -147,11 +158,15 @@
 
     const url = "https://api.synapsenote.com/api/users";
 
+    let UDNE = false;
+
     const dispatch = createEventDispatcher<{ userID: string }>()
 
     async function loginAttempt() {
         // query the database to check UN against Pass
         if(e.match(emailrg) && p!='') {
+
+            console.log('passed regex');
 
             //check for existing user
             let getEm = axios.create();
@@ -171,8 +186,12 @@
                     if(p == p1)
                         loginSuccess = true
 
+                    console.log('success');
+
                     // report the message
                     if (loginSuccess) dispatch('userID', response.data.id)
+                } else {
+                    UDNE = true;
                 }
             })
             .catch(function (error) {
@@ -229,15 +248,15 @@
                     data : data
                     };
 
+
                     await axios(config)
                     .then(function (response) {
+                        loginAttempt();
                     })
                     .catch(function (error) {
                     console.log(error);
                     });
 
-                    // report the message
-                    if (loginSuccess) dispatch('userID', response.data.id)
                 }
             })
             .catch(function (error) {
@@ -285,7 +304,8 @@
                 <button
                     class="button"
                     on:click={() => {
-                        loginAttempt()
+                        loginAttempt();
+                        console.log('clicked');
                     }}>
                     Log In
                 </button>
@@ -297,6 +317,13 @@
                 }}>
                 Create Account
             </button>
+
+            {#if UDNE}
+                <div class="error">
+                    Email does not match existing user.
+                </div>
+            {/if}
+
         </div>
     </div>
 </div>

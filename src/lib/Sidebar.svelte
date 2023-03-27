@@ -36,12 +36,12 @@
 <script lang="ts" context="module">
   import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
   export type note = {
-        id: number;
-        name: string;
-        category: string;
-        delta: Delta | null;
-        tgL: string[];
-    };
+      id: string;
+      name: string;
+      category: string;
+      ops: string | null;
+      tgL: string[];
+  };
 </script>
 
 <script lang="ts">
@@ -70,10 +70,10 @@ type notes = note[];
 export let noteList: notes;
 
 
-const dispatch = createEventDispatcher<{toFocus:number}>();
+const dispatch = createEventDispatcher<{toFocus:string}>();
 const dispatch1 = createEventDispatcher<{make:Boolean}>();
 
-function focusNewNote(id: number) {
+function focusNewNote(id: string) {
     // report the new noteID
     dispatch("toFocus",
         id

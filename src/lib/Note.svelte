@@ -1,17 +1,17 @@
 <script lang="ts" context="module">
     export type note = {
-        id: number;
-        name: string;
-        category: string;
-        delta: Delta | null;
-        tgL: string[];
-    };
+      id: string;
+      name: string;
+      category: string;
+      ops: string | null;
+      tgL: string[];
+  };
 </script>
 
 <script lang="ts">
     import { onMount } from "svelte";
     import Quill from "quill";
-    import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
+    import Delta from "quill";
 	import { afterUpdate } from 'svelte';
     import { createEventDispatcher } from 'svelte';
 
@@ -22,8 +22,10 @@
 
     let dispatch = createEventDispatcher<{graph:void}>();
 
-    let noteId: number;
-    noteId = 0;
+    export let uID: string;
+
+    let noteId: string;
+    noteId = "";
 
     let pg1 : HTMLElement;
 
@@ -77,40 +79,16 @@
             pts.push(pt);
         }
 
-		//requestAnimationFrame(draw);
 
     });
 
-    // function draw() {
-    //     const ctx = canvas.getContext('2d');
-    //     if(ctx!=null) {
-    //         ctx.clearRect(0,0,pxW,pxH);
-    //         curves(ctx);
-
-    //         if(ptsVis)
-    //         for(let i = 0;i<pts.length;i++) {
-    //             ctx.beginPath();
-    //             ctx.arc(pts[i][0], pts[i][1], 4, 0, 2 * Math.PI, false);
-    //             if(i%2==1)
-    //                 ctx.fillStyle = 'blue';
-    //             else 
-    //                 ctx.fillStyle = 'red';
-    //             ctx.fill();
-    //             ctx.lineWidth = 1;
-    //             ctx.strokeStyle = '#000000';
-    //             ctx.stroke();
-    //         }
-    //     }
-        
-    // }
-
     afterUpdate(async () => {
-        if(focusNote.delta!=null && noteId != focusNote.id) {
+        if(focusNote.ops!=null && noteId != focusNote.id) {
             console.log("updating display contents");
-            quill.setContents(focusNote.delta);
+            loadText(focusNote.ops);
             noteId = focusNote.id;
             title = focusNote.name;
-        } else if(focusNote.delta==null && noteId != focusNote.id) {
+        } else if(focusNote.ops==null && noteId != focusNote.id) {
             console.log("updating display contents to nothing");
             quill.setText("");
             noteId = focusNote.id;
@@ -121,110 +99,55 @@
 
     });
 
-    // let controlPt: number | null;
-    // controlPt = null;
-
-    // let grabbed = false;
     
-    // function controlPoint(event: MouseEvent) {
-
-        
-    //     var x = event.clientX - canvas.getClientRects()[0].left;
-    //     var y = event.clientY - canvas.getClientRects()[0].top;
-
-    //     x = pxW/canvas.clientWidth*x;
-    //     y = pxH/canvas.clientHeight*y;
-
-    //     let visTog = true;
-
-    //     if(controlPt==null) {
-    //         for(let i = 0;i<pts.length;i++) {
-    //             if(dist(pts[i], x, y) < 100) {
-    //                 controlPt = i;
-    //             }
-
-    //             if(dist(pts[i], x, y) < 1000) {
-    //                 if(!ptsVis)
-    //                     ptsVis = true;
-    //                 visTog = false;
-	// 	            requestAnimationFrame(draw);
-    //                 return;
-    //             }
-    //         }
-    //     } else {
-    //         controlPt = null;
-    //         visTog = false;
-    //     }
-
-    //     if(visTog) {
-    //         ptsVis = false;
-	// 	    requestAnimationFrame(draw);
-    //     }
-
-    // }
-
-    // function grabObj(event: MouseEvent) {
-
-    //     grabbed = !grabbed;
-
-    // }
-
-    // function movePoint(event: MouseEvent) {
-    //     if(grabbed) {
-    //         for(let i = 0;i<pts.length;i++) {
-    //             var x = event.clientX - canvas.getClientRects()[0].left;
-    //             var y = event.clientY - canvas.getClientRects()[0].top;
-
-    //             x = pxW/canvas.clientWidth*event.movementX;
-    //             y = pxH/canvas.clientHeight*event.movementY;
-
-    //             pts[i][0] += x;
-    //             pts[i][1] += y;
-    //         }
-	// 	    requestAnimationFrame(draw);
-    //     }else if(controlPt!=null) {
-    //         var x = event.clientX - canvas.getClientRects()[0].left;
-    //         var y = event.clientY - canvas.getClientRects()[0].top;
-
-    //         x = pxW/canvas.clientWidth*x;
-    //         y = pxH/canvas.clientHeight*y;
-
-    //         pts[controlPt][0] = x;
-    //         pts[controlPt][1] = y;
-	// 	    requestAnimationFrame(draw);
-    //     } 
-
-    // }
-
-    // function curves(ctx: CanvasRenderingContext2D) {
-    //     ctx.beginPath();
-    //     ctx.lineWidth = 1;
-    //     ctx.strokeStyle = '#000000';
-    //     let l = pts.length;
-    //     ctx.moveTo(pts[0][0], pts[0][1]);
-    //     let i = 0;
-    //     for(;i<pts.length;i+=2) {
-    //         ctx.quadraticCurveTo(pts[(i+1)%l][0],pts[(i+1)%l][1],pts[(i+2)%l][0],pts[(i+2)%l][1]);
-    //     }
-    //     ctx.quadraticCurveTo(pts[(i+1)%l][0],pts[(i+1)%l][1],pts[(i+2)%l][0],pts[(i+2)%l][1]);
-    //     ctx.moveTo(pts[0][0], pts[0][1]);
-    //     ctx.closePath();
-
-    //     ctx.fillStyle = 'gray';
-    //     ctx.fill('nonzero');
-    //     ctx.stroke();
-    // }
-
-
-    // function dist(pt: Point, mx:number, my:number) {
-    //     return Math.pow(pt[0]-mx,2) + Math.pow(pt[1]-my,2);
-    // }
     let tagList: string[];
     tagList = [];
     let tagString = '';
 
+    let chngCount = 0;
+
+    import axios from 'axios';
+  
+    const url = "https://api.synapsenote.com/api/users";
+    const url1 = "https://api.synapsenote.com/api/notes";
+
+    async function hardSave() {
+        chngCount = 0;
+        // check if not there
+        if(focusNote.id!="") {
+            await axios.put(url1+'/content/'+focusNote.id, {
+                content: focusNote.ops
+            }).then(function (){
+                console.log('creating note');
+            }).catch(function (error){
+                console.log(error);
+            });
+        } else {
+            await axios.post(url1+'/', {
+                content: focusNote.ops,
+                userId: uID,
+                title: focusNote.name,
+                isPublic: true
+            }).then(function (response){
+                focusNote.id = response.data.id;
+            }).catch(function (error){
+                console.log(error);
+            });
+        }
+        
+    }
+
     function saveText() {
-        focusNote.delta = quill.getContents();
+        focusNote.ops = JSON.stringify(quill.getContents().ops);
+
+        chngCount++;
+        hardSave();
+    }
+
+    function loadText(ops:string) {
+        let d1 = quill.getContents();
+        d1.ops = JSON.parse(ops);
+        quill.setContents(d1);
     }
 
     function makeTag() {
@@ -268,8 +191,6 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
-        <button on:click={makeTag}><FaHashtag /></button>
-        <button on:click={gotoGraph}><GoGitCommit /></button>
         
         <!-- <button class="ql-image"></button> -->
         <!-- <button class="ql-video"></button> -->
@@ -278,6 +199,7 @@
         <input type="text" class="taggen" bind:value={tagString}>
         <button class="taggen" on:click={storeTag}>Enter</button>
     {/if}
+    
     <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
 
     </div>

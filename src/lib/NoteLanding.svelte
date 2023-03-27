@@ -5,10 +5,10 @@
 
 <script lang="ts" context="module">
     export type note = {
-        id: number;
+        id: string;
         name: string;
         category: string;
-        delta: Delta | null;
+        ops: string | null;
         tgL: string[];
     };
 </script>
@@ -35,7 +35,7 @@
 
     focusNote = noteList[0];
 
-    function toFocus1(message: CustomEvent<number>) {
+    function toFocus1(message: CustomEvent<string>) {
         for (let index = 0; index < noteList.length; index++) {
             const element = noteList[index];
             if(element.id == message.detail) {

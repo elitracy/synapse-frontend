@@ -2,12 +2,12 @@
 <script lang="ts" context="module">
   import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
   export type note = {
-        id: number;
-        name: string;
-        category: string;
-        delta: Delta | null;
-        tgL: string[];
-    };
+      id: string;
+      name: string;
+      category: string;
+      ops: string | null;
+      tgL: string[];
+  };
 </script>
 
 <script lang="ts">
@@ -22,10 +22,10 @@
   
   import { createEventDispatcher } from 'svelte';
   
-  const dispatch = createEventDispatcher<{toFocus:number}>();
+  const dispatch = createEventDispatcher<{toFocus:string}>();
   const dispatch1 = createEventDispatcher<{make:Boolean}>();
 
-  function toFocus(message: CustomEvent<number>) {
+  function toFocus(message: CustomEvent<string>) {
       // report the new noteID
       dispatch("toFocus",
           message.detail

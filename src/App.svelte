@@ -4,10 +4,10 @@
 
 <script lang="ts" context="module">
   export type note = {
-      id: number;
+      id: string;
       name: string;
       category: string;
-      delta: Delta | null;
+      ops: string | null;
       tgL: string[];
   };
 </script>
@@ -21,36 +21,20 @@
   import NoteLanding from './lib/NoteLanding.svelte';
 
   import type Delta from "../node_modules/@types/quill/node_modules/quill-delta";
-    import GraphLanding from './lib/GraphLanding.svelte'
+  import GraphLanding from './lib/GraphLanding.svelte'
 
   let d = null;
 
 
   let note1: note;
-  let note2: note;
-  let note3: note;
-  let note4: note;
-  let note5: note;
-  let note6: note;
-  let note7: note;
-  let note8: note;
-  let note9: note;
-  note1 = {id: 0, name:"Note 1", category:"CSCE 482", delta:d, tgL:[]};
-  note2 = {id: 1, name:"Note 2", category:"CSCE 447", delta:d, tgL:[]};
-  note3 = {id: 2, name:"Note 3", category:"CSCE 447", delta:d, tgL:[]};
-  note4 = {id: 3, name:"Note 4", category:"CSCE 447", delta:d, tgL:[]};
-  note5 = {id: 4, name:"Note 5", category:"CSCE 447", delta:d, tgL:[]};
-  note6 = {id: 5, name:"Note 6", category:"CSCE 447", delta:d, tgL:[]};
-  note7 = {id: 6, name:"Note 7", category:"CSCE 447", delta:d, tgL:[]};
-  note8 = {id: 7, name:"Note 8", category:"CSCE 447", delta:d, tgL:[]};
-  note9 = {id: 8, name:"Note 9", category:"CSCE 447", delta:d, tgL:[]};
+  note1 = {id: "", name:"New Note", category:"general", ops:d, tgL:[]};
 
   type notes = note[];
   let notes = [
-        note1, note2, note3, note4, note5
+        note1
     ]
 
-  let page = 1;
+  let page = 0;
 
   let landing = 0;
 
@@ -64,26 +48,25 @@
 	async function logIn(event: CustomEvent<string>) {
 		uID = event.detail;
 
-    // await axios.get(url+'/:userId/notes', {
-    //   params: {uID}
-    // }).then(function (response){
-    //   console.log(response);
-    //   if(response.data)
-    //   for(let i = 1;i<response.data.length;i++)
-    //     notes.concat({id: i, name:response.data[i].context, category:"general", delta:null});
-    // });
+    await axios.get(url+'/'+uID+'/notes', {
+      
+    }).then(function (response){
+
+      console.log(response.data);
+      if(response.data)
+        for(let i = 0;i<response.data.length;i++) {
+          notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:[]});
+          console.log(i);
+        }
+    }).catch(function (error){
+      console.log(error);
+    });
 
     page = 1;
 	}
 
   async function createNote(message: CustomEvent<note>) {
-    console.log("here");
-    // await axios.post(url1+'/', {
-    //   context: message.detail.name,
-    //   userId: uID
-    // }).then(function (){
-       notes.push({id: notes.length, name:"New Note", category:"general", delta:null, tgL:[]});
-    // });
+    notes.push({id: "", name:"New Note", category:"general", ops:null, tgL:[]});
   }
 
   async function gotoNote(message: CustomEvent<note>) {
@@ -107,7 +90,7 @@
     <NoteLanding noteList={notes} on:make={gotoNote}/>
     {/if}
     {#if landing==1}
-    <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph}/>
+    <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
     {/if}
     {#if landing==2}
     <GraphLanding noteList={notes}/>
