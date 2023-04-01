@@ -62,8 +62,6 @@
                     for(let i = 0;i<ntL[k].tgL.length;i++) {
                         if(ntL[l].tgL.includes(ntL[k].tgL[i])) {
                             g[roots[k]].tpL.push(g[roots[l]]);
-
-                            console.log("here");
                         }
                     }
                 }
@@ -130,22 +128,49 @@
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
             var y = e.clientY - canvasElement.getClientRects()[0].top - canvasElement.height/2;
 
+            x = x/scale;
+            y = y/scale;
+
             let p:point;
             p = [x,y];
 
             let chge = false;
 
-            for(let i = 0;i<g.length;i++){
-                let t = g[i].location;
-                let pr = g[i].root?.location;
-                if(t&&pr){
-                    t = [pr[0]+t[0],pr[1]+t[1]];
-                    if(dist(p,t)<g[i].size*s && g[i].root){
-                        hovering = g[i];
-                        chge = true;
-                        break;
+            if(!moveSelect) {
+                let done = false;
+                for(let i = 0;i<g.length;i++){
+                    let t = g[i].location;
+                    let pr = g[i].root?.location;
+                    if(t&&pr){
+                        t = [pr[0]+t[0],pr[1]+t[1]];
+                        if(dist(p,t)<g[i].size*s){
+                            if(g[i].root) {
+                                hovering = g[i];
+                                chge = true;
+                            } 
+                            done = true;
+                            break;
+                        }
+                    } 
+                }
+                if(!done)
+                for(let i = 0;i<g.length;i++){
+                    let t = g[i].location;
+                    if(t) {
+                        if(!g[i].root && dist(p,t)<g[i].size*s){
+                            hovering = null;
+                            chge = true;
+                            break;
+                        }
                     }
                 }
+            }
+            else if(ctx) {
+                canvasElement.style.cursor = "grab"; 
+                moveSelect.location = p;
+                ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                drawTopics(ctx);
+                return;
             }
 
             if(chge)
@@ -158,10 +183,18 @@
 
         let single = true;
 
+        let moveSelect: topic | null;
+        moveSelect = null;
+
+
         canvasElement.onclick = function(e) {
 
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
             var y = e.clientY - canvasElement.getClientRects()[0].top - canvasElement.height/2;
+
+            x = x/scale;
+            y = y/scale;
+
 
             let p:point;
             p = [x,y];
@@ -171,46 +204,68 @@
             single = true;
 
             setTimeout(()=>{
-                if(single)
-                for(let i = 0;i<g.length;i++){
-                    let t = g[i].location;
-                    
-                    if(t && g[i].root!=null){
-                        let pr = g[i].root?.location;
-                        if(pr)
-                            t = [t[0]+pr[0],t[1]+pr[1]];
-                        if(dist(p,t)<g[i].size*s){
-                            if(selected.includes(g[i]) ){
-                                selected = selected.filter(n => n!=g[i]);
-                                selected = selected;
+                if(single) {
+                    let done = false;
+                    if(!moveSelect)
+                    for(let i = 0;i<g.length;i++){
+                        let t = g[i].location;
+                        
+                        if(t && g[i].root!=null){
+                            let pr = g[i].root?.location;
+                            if(pr)
+                                t = [t[0]+pr[0],t[1]+pr[1]];
+                            if(dist(p,t)<g[i].size*s){
+                                if(selected.includes(g[i]) ){
+                                    selected = selected.filter(n => n!=g[i]);
+                                    selected = selected;
 
-                                if(ctx) {
-                                    ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
-                                    drawTopics(ctx);
+                                    if(ctx) {
+                                        ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                                        drawTopics(ctx);
+                                    }
+                                    done = true;
+                                    break;
                                 }
+                                selected.push(g[i]);
+                                if(ctx){
+                                    ctx.translate(canvasElement.width/2, canvasElement.height/2);
+                                    ctx.beginPath();
+                                    ctx.ellipse(t[0],t[1],(g[i].size)*s,(g[i].size)*s, 0,0,2*Math.PI);
+                                    ctx.closePath();
+
+                                    ctx.lineWidth = 4;
+                                    ctx.strokeStyle = 'rgb(100, 100, 100)';
+                                    ctx.stroke();
+                                    ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
+
+                                }
+
+                                selected = selected;
+                                done = true;
 
                                 break;
                             }
-                            selected.push(g[i]);
-                            if(ctx){
-                                ctx.translate(canvasElement.width/2, canvasElement.height/2);
-                                ctx.beginPath();
-                                ctx.ellipse(t[0],t[1],(g[i].size)*s,(g[i].size)*s, 0,0,2*Math.PI);
-                                ctx.closePath();
-
-                                ctx.lineWidth = 4;
-                                ctx.strokeStyle = 'rgb(100, 100, 100)';
-                                ctx.stroke();
-                                ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
-
-                            }
-
-                            selected = selected;
-
-                            break;
-                        }
+                        } 
+                    
                     }
+                    if(!done)
+                        for(let i = 0;i<g.length;i++){
+                            let t = g[i].location;
+                            if(t && !g[i].root) {
+                                if(dist(p,t)<g[i].size*s){
+                                    if(!moveSelect){
+                                        moveSelect = g[i];
+                                        break;
+                                    } else {
+                                        moveSelect = null;
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
                 }
+                
 
                 // if(selected.length==2 && ctx) {
                 //     setTimeout(()=>addEdge(),100);
@@ -228,6 +283,11 @@
 
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
             var y = e.clientY - canvasElement.getClientRects()[0].top - canvasElement.height/2;
+
+
+            x = x/scale;
+            y = y/scale;
+
 
             let p:point;
             p = [x,y];
@@ -679,7 +739,7 @@
 
         let coef = 1*Math.sin(Math.PI/2+Math.PI/2*(a/fc));
 
-        let c1 = [0.7*(pb[0]-pa[0])+pa[0] - coef*Math.cos(angle+Math.PI/2)*r,0.7*(pb[1]-pa[1])+pa[1] - coef*Math.sin(angle+Math.PI/2)*r];
+        let c1 = [0.4*(pb[0]-pa[0])+pa[0] - coef*Math.cos(angle+Math.PI/2)*r,0.4*(pb[1]-pa[1])+pa[1] - coef*Math.sin(angle+Math.PI/2)*r];
         let c2 = [0.9*(pb[0]-pa[0])+pa[0] + coef*Math.cos(angle+Math.PI/2)*r,0.9*(pb[1]-pa[1])+pa[1] + coef*Math.sin(angle+Math.PI/2)*r];
 
         ctx.beginPath();

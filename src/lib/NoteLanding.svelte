@@ -142,8 +142,9 @@ href="https://fonts.googleapis.com/css?family=Roboto+Mono"
     height: fit-content;
     width:90%;
     margin: 3em;
+    background-color: rgb(179, 200, 200);
 
-    background-color: #242424;
+    color: #242424;
 }
 p {
     margin-block-start: 0;
@@ -156,7 +157,7 @@ p {
 }
 
 .create{
-    position: absolute;
+    position: fixed;
     bottom: 10vh;
     left: 10vw;
 

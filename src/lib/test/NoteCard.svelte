@@ -2,7 +2,7 @@
     <div class="card-container">
       <Card>
         <PrimaryAction on:click={reportID}>
-          <Media class="card-media-16x9" aspectRatio="16x9">
+          <div id="color" class="card" bind:this={c}>
             <MediaContent>
               <div
                 style="color: #fff; position: absolute; bottom: 16px; left: 16px;"
@@ -15,7 +15,7 @@
                 </h3> -->
               </div>
             </MediaContent>
-          </Media>
+          </div>
           <!-- <Content class="mdc-typography--body2">
             Add details here.
           </Content> -->
@@ -75,7 +75,7 @@
     } from '@smui/card';
     import Button, { Label } from '@smui/button';
     import IconButton, { Icon } from '@smui/icon-button';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount } from 'svelte';
     import axios from 'axios';
     import FaRegTrashAlt from 'svelte-icons/fa/FaRegTrashAlt.svelte'
 
@@ -115,10 +115,23 @@
         });
     }
 
+    let c: HTMLElement;
+
+    onMount(() => {
+
+      if(c)
+        c.setAttribute("style",`background-color: hsl(${Math.random()*(300)}, ${100}%, ${35}%)`);
+
+    });
+
+    
+
   </script>
   
   <style>
-    * :global(.card-media-16x9) {
-      background-image: url(https://place-hold.it/320x180?text=16x9&fontsize=23);
+
+    .card{
+      height: 8vh;
     }
+    
   </style>

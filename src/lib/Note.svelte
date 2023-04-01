@@ -74,6 +74,19 @@
 
         });
 
+        quill.on('selection-change', function(range, oldRange, source) {
+            if (range) {
+                if (range.length == 0) {
+                console.log('User cursor is on', range.index);
+                } else {
+                    var text = quill.getText(range.index, range.length);
+                    console.log(text);
+                }
+            } else {
+                console.log('Cursor not in the editor');
+            }
+        });
+
         for(let i = 0;i<6;i++) {
             let pt: Point;
             pt = [Math.random()*pxW, Math.random()*pxH];
@@ -146,6 +159,7 @@
 
         let splt = focusNote.ops?.split(/#/);
         tagList = [];
+
         if(splt && splt.length>1){
             for(let i = 1;i<splt.length;i+=2) {
                 tagList.push(splt[i]);
