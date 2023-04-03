@@ -54,7 +54,7 @@
 <div class="container">
     <Navbar noteList={noteList} on:toFocus={toFocus} on:make={newNote}/>
     {#if displayNote}
-        <Note focusNote={focusNote} on:graph={gotoGraph} uID={uID}/>
+        <Note focusNote={focusNote} on:graph={gotoGraph} uID={uID} noteList={noteList}/>
     {/if}
 </div>
 

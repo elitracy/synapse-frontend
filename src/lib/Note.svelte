@@ -28,6 +28,8 @@
 
     export let uID: string;
 
+    export let noteList: note[];
+
     let noteId: string;
     noteId = "";
 
@@ -109,6 +111,8 @@
 
     var tagging = false;
 
+    var decreasing = false;
+
 
 
 
@@ -131,6 +135,8 @@
 
         quill.on('text-change', function(delta, oldDelta, source) {
 
+            clearTagDisplay();
+
             if (source == 'api') {
                 quill.update();
                 var cur = quill.getSelection();
@@ -141,34 +147,63 @@
             } else if (source == 'user') {
                 var curPos = quill.getSelection();
 
+                delta = quill.getContents();
+
+                let dff = oldDelta.diff(delta);
+                console.log(dff);
+
+                let cL = dff.changeLength();
+                if(cL<=0){
+                    decreasing = true;
+                } else {
+                    decreasing = false;
+                }
+
                 var actcur = 0;
-                if(curPos)
+                if(curPos && !decreasing)
                     actcur =  curPos.index-1;
+                else if(curPos)
+                    actcur =  curPos.index+1;
+
+                let removeRanges : tagrange[];
+                removeRanges = [];
+
                 if(curPos && (quill.getText(curPos.index-1,1) != "#" || quill.getText(curPos.index-2,1) == "\\"))
                 for(let i = 0;i<activeRanges.length;i++) {
-                    if(!tagging && actcur>=activeRanges[i][0] && actcur<(activeRanges[i][0]+activeRanges[i][1]-1)) {
+                    if(!tagging && actcur>=activeRanges[i][0] && actcur<(activeRanges[i][0]+activeRanges[i][1])) {
 
                         let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]+1);
 
                         activeRanges[i][2] = b.top;
                         activeRanges[i][3] = b.height;
-
-                        // console.log(activeRanges[i][0] + " " + activeRanges[i][1]);
-                        // console.log(actcur + " " + (activeRanges[i][0]+activeRanges[i][1]-1));
-                        // console.log(tagging);
-                        activeRanges[i][1] += 1;
-                    } else if(tagging && actcur>=activeRanges[i][0] && actcur<activeRanges[i][0]+activeRanges[i][1]+1) {
+                        
+                        if(decreasing)
+                            activeRanges[i][1] -= 1;
+                        else
+                            activeRanges[i][1] += 1;
+                    } else if(tagging && actcur>=activeRanges[i][0] && actcur<activeRanges[i][0]+activeRanges[i][1]) {
 
                         let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]);
 
                         activeRanges[i][2] = b.top;
                         activeRanges[i][3] = b.height;
 
-                        console.log(activeRanges[i][0] + " " + activeRanges[i][1]);
-                        console.log(tagging);
-
-                        activeRanges[i][1] += 1;
+                        if(decreasing)
+                            activeRanges[i][1] -= 1;
+                        else
+                            activeRanges[i][1] += 1;
                     }
+
+                    console.log(decreasing + " "+ activeRanges[i][1] + " " + activeRanges[i][0] + " " + actcur);
+                    if(activeRanges[i][1]<=0) {
+                        removeRanges.push(activeRanges[i])
+                        console.log(activeRanges[i][0] + " " + activeRanges[i][1]);
+                        tagging = false;
+                    }
+                }
+
+                for(let j = 0;j<removeRanges.length;j++){
+                    activeRanges = activeRanges.filter(n => n[0]!=removeRanges[j][0] && n[1]!=removeRanges[j][1]);
                 }
 
 
@@ -184,6 +219,8 @@
                         //     ind += 1;
 
                         // quill.format('size',Size.whitelist[ind])
+
+                        quill.insertText(curPos.index-1,"\n","api");
 
                         tagging = false;
 
@@ -203,9 +240,11 @@
 
                         ind = Size.whitelist.length-1;
 
-                        var bounds = quill.getBounds(curPos.index-1, 2);
+                        var bounds = quill.getBounds(curPos.index, 1);
 
-                        activeRanges.push([curPos.index,0,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+                        activeRanges.push([curPos.index,1,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+
+                        console.log(curPos.index + " ");
 
                     }
                     
@@ -256,7 +295,7 @@
                 if(ind>0)
                     ind -= 1;
 
-                quill.format('size',Size.whitelist[ind])
+                quill.format('size',Size.whitelist[ind]);
             }
         }
 
@@ -277,7 +316,9 @@
             console.log("updating display contents");
             loadText(focusNote.ops);
             noteId = focusNote.id;
+            noteId = noteId;
             title = focusNote.name;
+            title = title;
             hardSave();
         } else if(focusNote.ops==null && noteId != focusNote.id) {
             console.log("updating display contents to nothing");
@@ -341,7 +382,13 @@
         //     console.log(tagList);
         // }
 
-        focusNote.tgL = tagList;
+        //focusNote.tgL = tagList;
+
+        focusNote.tgL = [];
+
+        for(let i = 0;i<activeRanges.length;i++){
+            focusNote.tgL.push(JSON.stringify(activeRanges[i]));
+        }
         
     }
 
@@ -360,6 +407,11 @@
         let d1 = quill.getContents();
         d1.ops = JSON.parse(ops);
         quill.setContents(d1);
+        activeRanges = [];
+
+        for(let i = 0;i<focusNote.tgL.length;i++){
+            activeRanges.push(JSON.parse(focusNote.tgL[i]));
+        }
     }
 
 
@@ -381,8 +433,34 @@
     let tagName: string | null;
     tagName = null;
 
+    let subNoteList: note[];
+    subNoteList = [];
+
     function setFocusName(s:string|null){
         tagName = s;
+
+        if(tagName)
+        {
+            for(let i = 0;i<noteList.length;i++) {
+                let n = noteList[i];
+                if(n.id!=focusNote.id)
+                    for(let j = 0;j<n.tgL.length;j++){
+                        
+                        if(tagName==JSON.parse(n.tgL[j])[4]){
+                            subNoteList.push(noteList[i]);
+                            break;
+                        }
+                    }
+            }
+        } else {
+            subNoteList = [];
+        }
+    }
+
+    function clearTagDisplay(){
+        for(let i = 0;i<activeRanges.length;i++) {
+            activeRanges[i][5] = false;
+        }
     }
 
 
@@ -422,7 +500,7 @@
     </div>
 
     <div class="pageandtags">
-        <div class="page" id="first" bind:this={pg1} >
+        <div class="page" id="first" bind:this={pg1} on:focus={()=>clearTagDisplay()}>
 
         </div>
 
@@ -439,7 +517,7 @@
             {/if}
             
             {#if rng[5]}
-            <div class="name" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; " bind:textContent={rng[4]} contenteditable="true">
+            <div class="name" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; " bind:textContent={rng[4]} on:focus={()=>{rng[5]=true}} contenteditable="true">
                 {rng[4]}
             </div>
             {/if}
@@ -452,16 +530,26 @@
                     Active Tags
                 </div>
                 {#each activeRanges as rng}
-                    <div class="activeName" tabindex="-1" on:focus={()=>{zoomTo(rng[2]+240);setFocusName(rng[4]);rng[5]=true}} on:focusout={()=>{setFocusName(null);rng[5]=false}}>
+                    <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} on:focusout={()=>{setFocusName(null);}}>
                         {rng[4]}
                     </div>
                 {/each}
             </div>
-            {#if tagName!=null}
-                <div class="tagsNav">
-                    Here
-                </div>
-            {/if}
+            <div class="tagNav">
+                {#if tagName!=null}
+                    {#if subNoteList.length!=0}
+                        <div class="tagsTitleNav">
+                            References
+                        </div>
+                        {#each subNoteList as refs}
+                            <div class="activeName" tabindex="-1" on:focus={()=>{}} on:focusout={()=>{}}>
+                                {refs.name}
+                            </div>
+                        {/each}
+                    {/if}
+                {/if}
+            </div>
+            
             
         {/if}
     </div>    
@@ -502,17 +590,32 @@
     }
 
     .tag1{
-        background-color: rgba(100, 100, 100, .5);
-        border-radius: 5px;
+        background-color: transparent;
+        /* border-radius: 5px; */
         left: 21vw;
         width: 10px !important;
+
+        border-left: 3px solid rgba(50,50,50,.3);
+        border-top: 1px solid rgba(50,50,50,.3);
+        border-bottom: 1px solid rgba(50,50,50,.3);
+
+
     }
     .tag2{
-        background-color: rgba(100, 100, 100, 1);
-        border-radius: 5px;
+        border-left: 3px solid rgba(50,50,50,.8);
+        border-top: 1px solid rgba(50,50,50,.8);
+        border-bottom: 1px solid rgba(50,50,50,.8);
+        background-color: transparent;
+
         left: 21vw;
         width: 10px !important;
     }
+
+    .name:focus{
+        border: none;
+        outline: none;
+    }
+
 
     .tag:hover{
         background-color: rgba(100, 100, 100, 1);
@@ -537,14 +640,12 @@
         z-index: 0;
     }
 
-    .tagsNav{
+    .tagNav{
         position: fixed;
         right:0vw;
         bottom:25vh;
 
         width:20vw;
-
-        color:rgba(100, 100, 100, 1);
 
         display: flex;
         flex-direction: column;
@@ -563,6 +664,12 @@
         border-bottom: 2px solid rgb(100,100,100);
     }
 
+    .tagsTitleNav{
+        font-size: 2em;
+        color: rgba(50, 50, 50, 1);
+
+        border-bottom: 2px solid rgb(100,100,100);
+    }
     .name{
         color: rgba(100, 100, 100, 1);
         font-size: 1.5em;
