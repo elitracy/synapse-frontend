@@ -10,7 +10,7 @@
 
 <script lang="ts">
     import { onMount } from "svelte";
-    import Quill from "quill";
+    import Quill, { RangeStatic } from "quill";
     import Delta from "quill";
 	import { afterUpdate } from 'svelte';
     import { createEventDispatcher } from 'svelte';
@@ -18,6 +18,9 @@
     import FaHashtag from '../../node_modules/svelte-icons/fa/FaHashtag.svelte';
     import GoGitCommit from 'svelte-icons/go/GoGitCommit.svelte';
     import FaRegSave from 'svelte-icons/fa/FaRegSave.svelte'
+    import TiTag from 'svelte-icons/ti/TiTag.svelte'
+    import TiTrash from 'svelte-icons/ti/TiTrash.svelte'
+
 
     export let focusNote: note;
 
@@ -50,11 +53,74 @@
 
     let ptsVis = false;
 
+    var Size = Quill.import('attributors/style/size');
+    Size.whitelist = ['14px', '22px', '30px'];
+    Quill.register(Size, true);
+
+    var ind = 0;
+
+    type tagHeader = number;
+
+    let headers: tagHeader[];
+    headers = [];
+
+    let seq = false;
+
+    type tagrange = [index:number, length:number, top:number, height:number, name:string, selected:boolean];
+
+
+    let activeRanges : tagrange[];
+    activeRanges = [];
+
+
+
+    var Embed = Quill.import('blots/block/embed');
+    class Hr extends Embed {
+        static create(value:any) {
+            let node = super.create(value);
+            // give it some margin
+            node.setAttribute('style', 'background-color:black;height:0px; margin-top:10px; margin-bottom:10px;');
+            return node;
+        }
+    }
+
+    var customHrHandler = function(){
+        // get the position of the cursor
+        var range = quill.getSelection();
+        if (range && range.length!=0) {
+            var bounds = quill.getBounds(range.index, range.length);
+
+            activeRanges.push([range.index,range.length,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+            console.log(range.index+" "+range.length);
+            activeRanges = activeRanges;
+
+            tagList.push("tag #"+(activeRanges.length));
+        }
+    }
+
+    Hr.blotName = 'hr'; //now you can use .ql-hr classname in your toolbar
+    Hr.className = 'my-hr';
+    Hr.tagName = 'hr';
+
+    Quill.register({
+        'formats/hr': Hr
+    });
+
+
+    var tagging = false;
+
+
+
+
       
     onMount(async () => {
         quill = new Quill(pg1, {
             modules: {
-            toolbar: '#toolbar'
+            toolbar: {container:'#toolbar',
+            handlers: {
+                'hr': customHrHandler
+            }
+            }
             },
             theme: "snow",
             placeholder: ""
@@ -64,28 +130,135 @@
         title = focusNote.name;
 
         quill.on('text-change', function(delta, oldDelta, source) {
+
             if (source == 'api') {
-                console.log("An API call triggered this change.");
+                quill.update();
+                var cur = quill.getSelection();
+                console.log(cur?.index)
+
+                if(cur)
+                    quill.setSelection(cur.index,0);
             } else if (source == 'user') {
-                console.log("A user action triggered this change.");
+                var curPos = quill.getSelection();
+
+                var actcur = 0;
+                if(curPos)
+                    actcur =  curPos.index-1;
+                if(curPos && (quill.getText(curPos.index-1,1) != "#" || quill.getText(curPos.index-2,1) == "\\"))
+                for(let i = 0;i<activeRanges.length;i++) {
+                    if(!tagging && actcur>=activeRanges[i][0] && actcur<(activeRanges[i][0]+activeRanges[i][1]-1)) {
+
+                        let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]+1);
+
+                        activeRanges[i][2] = b.top;
+                        activeRanges[i][3] = b.height;
+
+                        // console.log(activeRanges[i][0] + " " + activeRanges[i][1]);
+                        // console.log(actcur + " " + (activeRanges[i][0]+activeRanges[i][1]-1));
+                        // console.log(tagging);
+                        activeRanges[i][1] += 1;
+                    } else if(tagging && actcur>=activeRanges[i][0] && actcur<activeRanges[i][0]+activeRanges[i][1]+1) {
+
+                        let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]);
+
+                        activeRanges[i][2] = b.top;
+                        activeRanges[i][3] = b.height;
+
+                        console.log(activeRanges[i][0] + " " + activeRanges[i][1]);
+                        console.log(tagging);
+
+                        activeRanges[i][1] += 1;
+                    }
+                }
+
+
+                activeRanges = activeRanges;
+
+
+                if(curPos && quill.getText(curPos.index-1,1) === "#" && quill.getText(curPos.index-2,1) != "\\") {
+                    if(tagging) {
+
+                        quill.deleteText(curPos.index-1,1);
+
+                        // if(ind<Size.whitelist.length-1)
+                        //     ind += 1;
+
+                        // quill.format('size',Size.whitelist[ind])
+
+                        tagging = false;
+
+                    } else {
+                        seq = true;
+
+                        tagging = true;
+
+                        quill.deleteText(curPos.index-1,1);
+
+                        if(curPos.index-1!=0)
+                            quill.insertText(curPos.index-1, "\n");
+
+                        quill.format('size',Size.whitelist[Size.whitelist.length-1]);
+
+                        quill.update();
+
+                        ind = Size.whitelist.length-1;
+
+                        var bounds = quill.getBounds(curPos.index-1, 2);
+
+                        activeRanges.push([curPos.index,0,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+
+                    }
+                    
+
+                } else if(curPos && quill.getText(curPos.index-1,1) === "#" && quill.getText(curPos.index-2,1) == "\\"){
+
+                    quill.deleteText(curPos.index-2,1,'api');
+                } 
+                
+            } else if(source=='silent'){
+
+                
+
             }
 
             saveText();
 
         });
 
+
+
         quill.on('selection-change', function(range, oldRange, source) {
             if (range) {
                 if (range.length == 0) {
-                console.log('User cursor is on', range.index);
+
+                    console.log('User cursor is on', range.index);
                 } else {
                     var text = quill.getText(range.index, range.length);
+
+                    var bounds = quill.getBounds(range.index, range.length);
+
                     console.log(text);
+                    console.log(bounds);
                 }
             } else {
                 console.log('Cursor not in the editor');
             }
         });
+        pg1.onclick = function(e:MouseEvent){
+            quill.focus();
+        };
+        pg1.onmouseover = function(e:MouseEvent){
+            pg1.style.cursor = "text";
+        };
+
+        pg1.onkeydown = function(e:KeyboardEvent){
+            if(e.keyCode==13){
+                if(ind>0)
+                    ind -= 1;
+
+                quill.format('size',Size.whitelist[ind])
+            }
+        }
 
         for(let i = 0;i<6;i++) {
             let pt: Point;
@@ -157,17 +330,18 @@
         }
 
 
-        let splt = focusNote.ops?.split(/#/);
-        tagList = [];
+        // let splt = focusNote.ops?.split(/#/);
+        // tagList = [];
 
-        if(splt && splt.length>1){
-            for(let i = 1;i<splt.length;i+=2) {
-                tagList.push(splt[i]);
-            }
+        // if(splt && splt.length>1){
+        //     for(let i = 1;i<splt.length;i+=2) {
+        //         tagList.push(splt[i]);
+        //     }
 
-            console.log(tagList);
-            focusNote.tgL = tagList;
-        }
+        //     console.log(tagList);
+        // }
+
+        focusNote.tgL = tagList;
         
     }
 
@@ -193,11 +367,30 @@
         dispatch('graph');
     }
 
+   
+
+
+    let tagFocus = false;
+
+    function zoomTo(i:number){
+        window.scrollTo({
+        top: i,
+        behavior: "smooth",
+        });
+    }
+    let tagName: string | null;
+    tagName = null;
+
+    function setFocusName(s:string|null){
+        tagName = s;
+    }
+
 
     
     
 </script>
 
+<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
 
 <div class="container" id="pages">
     <h1 class="title" contenteditable="true" bind:textContent={title}>
@@ -205,12 +398,12 @@
     </h1>
     
     <div id="toolbar">
-        <select class="ql-size">
-            <option value="small"></option>
-            <option selected></option>
-            <option value="large"></option>
-            <option value="huge"></option>
-        </select>
+        <!-- <select class="ql-size">
+            <selected ></selected>
+            <option value="14px">14px</option>
+            <option value="22px">22px</option>
+            <option value="30px">30px</option>
+        </select> -->
         <button class="ql-bold"></button>
         <button class="ql-italic"></button>
         <button class="ql-underline"></button>
@@ -218,17 +411,61 @@
         <select class="ql-background"></select>
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
-        <button class="ql-save" on:click={hardSave}><FaRegSave/></button>
-        <button class="ql-graph" on:click={gotoGraph}><GoGitCommit /></button>
-        
-        <!-- <button class="ql-image"></button> -->
-        <!-- <button class="ql-video"></button> -->
+
+        <div style="width:30px">
+
+        </div>
+
+        <button class="icon" on:click={customHrHandler}><TiTag/></button>
+        <button class="icon" on:click={hardSave}><FaRegSave/></button>
+        <button class="icon" on:click={gotoGraph}><GoGitCommit /></button>
     </div>
 
+    <div class="pageandtags">
+        <div class="page" id="first" bind:this={pg1} >
+
+        </div>
+
+        {#each activeRanges as rng}
+            {#if rng[5]}
+                <div class="tag2" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; width:20px;">
+
+                </div>
+            {/if}
+            {#if !rng[5]}
+                <div class="tag1" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; width:20px;">
+
+                </div>
+            {/if}
+            
+            {#if rng[5]}
+            <div class="name" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; " bind:textContent={rng[4]} contenteditable="true">
+                {rng[4]}
+            </div>
+            {/if}
+            
+        {/each}
+
+        {#if !tagFocus}
+            <div class="showTags">
+                <div class="tagsTitle">
+                    Active Tags
+                </div>
+                {#each activeRanges as rng}
+                    <div class="activeName" tabindex="-1" on:focus={()=>{zoomTo(rng[2]+240);setFocusName(rng[4]);rng[5]=true}} on:focusout={()=>{setFocusName(null);rng[5]=false}}>
+                        {rng[4]}
+                    </div>
+                {/each}
+            </div>
+            {#if tagName!=null}
+                <div class="tagsNav">
+                    Here
+                </div>
+            {/if}
+            
+        {/if}
+    </div>    
     
-    <div class="page" id="first" style="margin-top:5vh;" bind:this={pg1}>
-
-    </div>
 
 
 </div>
@@ -249,11 +486,124 @@
         padding: 0px;
     } */
 
-    .taggen{
-        position: absolute;
-        top: 50em;
-        left: 5em;
+    .pageandtags{
+        width:fit-content;
+        height: fit-content;
+        display: flex;
+        flex-direction: row;
+
+        margin-top: 40px;
     }
+
+    .icon {
+        color: rgb(60,60,60);
+        width: 32px;
+        height: 32px;
+    }
+
+    .tag1{
+        background-color: rgba(100, 100, 100, .5);
+        border-radius: 5px;
+        left: 21vw;
+        width: 10px !important;
+    }
+    .tag2{
+        background-color: rgba(100, 100, 100, 1);
+        border-radius: 5px;
+        left: 21vw;
+        width: 10px !important;
+    }
+
+    .tag:hover{
+        background-color: rgba(100, 100, 100, 1);
+    }
+
+    .showTags{
+        position: fixed;
+        right:0vw;
+        top:25vh;
+
+        width:20vw;
+
+        color:rgba(100, 100, 100, 1);
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 1.5em;
+
+        z-index: 0;
+    }
+
+    .tagsNav{
+        position: fixed;
+        right:0vw;
+        bottom:25vh;
+
+        width:20vw;
+
+        color:rgba(100, 100, 100, 1);
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 1.5em;
+
+        z-index: 0;
+    }
+
+    .tagsTitle{
+        font-size: 2em;
+        color: rgba(50, 50, 50, 1);
+
+        border-bottom: 2px solid rgb(100,100,100);
+    }
+
+    .name{
+        color: rgba(100, 100, 100, 1);
+        font-size: 1.5em;
+        left:11vw;
+
+        width:fit-content;
+
+        max-width:8vw;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .activeName{
+        color: rgba(100, 100, 100, 1);
+        font-size: 1.5em;
+        left:11vw;
+
+        width:fit-content;
+
+        max-width:8vw;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        cursor: pointer;
+    }
+
+    .activeName:focus{
+        color: rgba(50, 50, 50, 1);
+    }
+
+    .trash-icon{
+        color: rgba(100, 100, 100, .8);
+        width: 32px;
+        height: 32px;
+        left:10vw;
+    }
+
 
     .title{
         color: rgb(100,100,100);
@@ -278,7 +628,7 @@
         justify-content: space-around;
         align-items: center;
 
-        padding-top:10vh;
+        padding-top:50px;
     }
 
     .page{
@@ -291,8 +641,8 @@
 
         padding-left: 5em;
         padding-right: 5em;
-        padding-top: 7.5em;
-        padding-bottom: 7.5em;
+        padding-top: 100px;
+        padding-bottom: 100px;
 
         z-index: 0;
 

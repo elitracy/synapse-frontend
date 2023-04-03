@@ -105,6 +105,8 @@ nav {
   background: white;
   overflow-y: auto;
 	width: 10rem;
+
+    z-index: 1;
 }
 button {
     border:1px thick black !important;
