@@ -890,7 +890,7 @@
         min-width: 100vw;
         min-height: fit-content;
 
-        background-color: rgb(179, 200, 200);
+        background-color: lightgray;
 
         display: flex;
         flex-direction: column;

@@ -142,7 +142,7 @@ href="https://fonts.googleapis.com/css?family=Roboto+Mono"
     height: fit-content;
     width:90%;
     margin: 3em;
-    background-color: rgb(179, 200, 200);
+    background-color: white;
 
     color: #242424;
 }
