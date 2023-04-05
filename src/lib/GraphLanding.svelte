@@ -51,7 +51,7 @@
 
             let ind = g.length-1;
             for(let i = 0;i<ntL[k].tgL.length;i++) {
-                g.push({size:3,name:ntL[k].tgL[i], tpL:[], root:g[ind],location:null, color:null});
+                g.push({size:3,name:JSON.parse(ntL[k].tgL[i])[4], tpL:[], root:g[ind],location:null, color:null});
             }
         }
 

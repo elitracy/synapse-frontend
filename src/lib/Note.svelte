@@ -170,28 +170,46 @@
 
                 if(curPos && (quill.getText(curPos.index-1,1) != "#" || quill.getText(curPos.index-2,1) == "\\"))
                 for(let i = 0;i<activeRanges.length;i++) {
-                    if(!tagging && actcur>=activeRanges[i][0] && actcur<(activeRanges[i][0]+activeRanges[i][1])) {
+                    if(!tagging && actcur<(activeRanges[i][0]+activeRanges[i][1])) {
+
+                        
+                        
+                        if(decreasing && actcur>=activeRanges[i][0])
+                            activeRanges[i][1] -= 1;
+                        else if(actcur>=activeRanges[i][0])
+                            activeRanges[i][1] += 1;
+
+                        if(actcur<activeRanges[i][0]) {
+                            if(decreasing)
+                                activeRanges[i][0] -= 1;
+                            else
+                                activeRanges[i][0] += 1;
+                        }
 
                         let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]+1);
 
                         activeRanges[i][2] = b.top;
                         activeRanges[i][3] = b.height;
+
+                    } else if(tagging && actcur<activeRanges[i][0]+activeRanges[i][1]) {
+
                         
-                        if(decreasing)
+
+                        if(decreasing && actcur>=activeRanges[i][0])
                             activeRanges[i][1] -= 1;
-                        else
+                        else if(actcur>=activeRanges[i][0])
                             activeRanges[i][1] += 1;
-                    } else if(tagging && actcur>=activeRanges[i][0] && actcur<activeRanges[i][0]+activeRanges[i][1]) {
+                        if(actcur<activeRanges[i][0]) {
+                            if(decreasing)
+                                activeRanges[i][0] -= 1;
+                            else
+                                activeRanges[i][0] += 1;
+                        }
 
                         let b = quill.getBounds(activeRanges[i][0],activeRanges[i][1]);
 
                         activeRanges[i][2] = b.top;
                         activeRanges[i][3] = b.height;
-
-                        if(decreasing)
-                            activeRanges[i][1] -= 1;
-                        else
-                            activeRanges[i][1] += 1;
                     }
 
                     console.log(decreasing + " "+ activeRanges[i][1] + " " + activeRanges[i][0] + " " + actcur);
@@ -240,9 +258,9 @@
 
                         ind = Size.whitelist.length-1;
 
-                        var bounds = quill.getBounds(curPos.index, 1);
+                        var bounds = quill.getBounds(curPos.index-1, 1);
 
-                        activeRanges.push([curPos.index,1,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+                        activeRanges.push([curPos.index,1,bounds.top,bounds.height+60,"tag #"+(activeRanges.length+1),false]);
 
                         console.log(curPos.index + " ");
 
@@ -284,6 +302,7 @@
             }
         });
         pg1.onclick = function(e:MouseEvent){
+            clearTagDisplay();
             quill.focus();
         };
         pg1.onmouseover = function(e:MouseEvent){
@@ -407,11 +426,52 @@
         let d1 = quill.getContents();
         d1.ops = JSON.parse(ops);
         quill.setContents(d1);
+
+        decreasing = false;
+        tagging = false; 
+
+        tagName = null;
+        subNoteList = [];
+
         activeRanges = [];
 
         for(let i = 0;i<focusNote.tgL.length;i++){
             activeRanges.push(JSON.parse(focusNote.tgL[i]));
         }
+
+        activeRanges = activeRanges;
+    }
+
+    function loadTextandZoom(ops:string, tgn:string) {
+        let d1 = quill.getContents();
+        d1.ops = JSON.parse(ops);
+        quill.setContents(d1);
+
+        decreasing = false;
+        tagging = false; 
+
+        tagName = tgn;
+        subNoteList = [];
+
+        activeRanges = [];
+
+        for(let i = 0;i<focusNote.tgL.length;i++){
+            activeRanges.push(JSON.parse(focusNote.tgL[i]));
+        }
+
+        activeRanges = activeRanges;
+
+        if(tgn) {
+            for(let j = 0;j<activeRanges.length;j++) {
+                if(activeRanges[j][4]==tgn) {
+                    activeRanges[j][5] = true;
+                    zoomTo(activeRanges[j][2]+150);
+                    break;
+                }
+            }
+        }
+
+        setFocusName(tgn);
     }
 
 
@@ -460,6 +520,27 @@
     function clearTagDisplay(){
         for(let i = 0;i<activeRanges.length;i++) {
             activeRanges[i][5] = false;
+        }
+    }
+
+    function gotoReference(n:note, tgName:string|null){
+        if(tgName) {
+            hardSave();
+            if(n.ops) {
+                console.log("updating display contents");
+                focusNote = n;
+                loadTextandZoom(n.ops, tgName);
+                noteId = n.id;
+                noteId = noteId;
+                title = n.name;
+                title = title;
+                hardSave();
+
+                
+
+                console.log("here");
+            }
+            
         }
     }
 
@@ -530,7 +611,7 @@
                     Active Tags
                 </div>
                 {#each activeRanges as rng}
-                    <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} on:focusout={()=>{setFocusName(null);}}>
+                    <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} >
                         {rng[4]}
                     </div>
                 {/each}
@@ -542,7 +623,7 @@
                             References
                         </div>
                         {#each subNoteList as refs}
-                            <div class="activeName" tabindex="-1" on:focus={()=>{}} on:focusout={()=>{}}>
+                            <div class="activeName" tabindex="-1" on:focusin={()=>{gotoReference(refs, tagName)}}>
                                 {refs.name}
                             </div>
                         {/each}
