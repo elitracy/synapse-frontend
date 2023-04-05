@@ -173,8 +173,10 @@
                 return;
             }
 
-            if(chge)
+            if(chge && hovering)
                 canvasElement.style.cursor = "pointer"; 
+            else if(chge)
+                canvasElement.style.cursor = "grab"; 
             else {
                 canvasElement.style.cursor = "default";
                 hovering = null;
