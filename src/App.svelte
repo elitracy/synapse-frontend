@@ -66,7 +66,12 @@
                   tagList.push(splt[i]);
               }
           }
-          notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:tagList});
+
+          if(!response.data[i].tags) {
+            notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:tagList});
+          } else {
+            notes.push({id: response.data[i].id, name:response.data[i].title, category:"general", ops:response.data[i].content, tgL:response.data[i].tags});
+          }
         }
     }
   }).catch(function (error){
@@ -74,6 +79,23 @@
     });
 
     page = 1;
+
+
+    for(let i = 0;i<notes.length;i++) {
+      let tagList: string[];
+      tagList = [];
+      await axios.get(url1+'/'+notes[i].id+'/tags',{}).then(function (response){
+        if(response.data) {
+          for(let j = 0;j<response.data.tags.length;j++) {
+            let name = JSON.parse(response.data.tags[j].name);
+            name.push(response.data.tags[j].id);
+            tagList.push(JSON.stringify(name));
+          }
+        }
+      });
+
+      notes[i].tgL = tagList;
+    }
 	}
 
   async function createNote(message: CustomEvent<note>) {

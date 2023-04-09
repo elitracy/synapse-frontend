@@ -26,8 +26,11 @@
 
 
 <script lang="ts" src="./test/topics.json">
+    import { stringify } from "postcss"
+
     import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
     import { createEventDispatcher } from 'svelte';
+    import MdHome from 'svelte-icons/md/MdHome.svelte';
 
     export let noteList: note[];
   
@@ -37,6 +40,19 @@
 
     let scale = 1;
 
+
+    type Edge = [from:string, to:string, how:string];
+
+    let eList: Edge[];
+
+    eList = [];
+
+    var stringToHTML = function (str:string) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(str, 'text/html');
+        return doc.body;
+    };
+
     
 
 
@@ -45,13 +61,21 @@
 
         let roots = [];
         for(let k = 0;k<ntL.length;k++) {
-            g.push({size:ntL[k].tgL.length*2+10,name:ntL[k].name, tpL:[], root:null,location:null, color:null});
+            g.push({size:ntL[k].tgL.length*2+10,name:ntL[k].name, tpL:[], root:null,location:null, color:`hsla(${Math.random()*(360)},${100}%,${75}%, 0.1)`});
 
             roots.push(g.length-1);
 
             let ind = g.length-1;
             for(let i = 0;i<ntL[k].tgL.length;i++) {
-                g.push({size:3,name:JSON.parse(ntL[k].tgL[i])[4], tpL:[], root:g[ind],location:null, color:null});
+                g.push({size:3,name:JSON.parse(ntL[k].tgL[i])[4], tpL:[], root:g[ind],location:null, color:`rgb(${Math.random()*(255)},${Math.random()*255},${Math.random()*255})`});
+
+
+                for(let j = 0;j<g.length-1;j++) {
+                    if(g[j].name == g[g.length-1].name) {
+                        g[g.length-1].color = g[j].color;
+                        break;
+                    }
+                }
             }
         }
 
@@ -60,8 +84,13 @@
             for(let l = 0;l<ntL.length;l++) {
                 if(k!=l) {
                     for(let i = 0;i<ntL[k].tgL.length;i++) {
-                        if(ntL[l].tgL.includes(ntL[k].tgL[i])) {
-                            g[roots[k]].tpL.push(g[roots[l]]);
+                        for(let j = 0;j<ntL[l].tgL.length;j++) {
+                            if(JSON.parse(ntL[l].tgL[j])[4] == JSON.parse(ntL[k].tgL[i])[4]) {
+                                g[roots[k]].tpL.push(g[roots[l]]);
+                                console.log(ntL[l].tgL[j][4]);
+                                eList.push([g[roots[k]].name,g[roots[l]].name,`shares topic ${JSON.parse(ntL[l].tgL[j])[4]} with`]);
+                                eList = eList;
+                            }
                         }
                     }
                 }
@@ -81,6 +110,7 @@
     import { onMount } from "svelte";
     import { draw } from "svelte/transition"
     import type { X } from "vitest/dist/types-0373403c"
+    import { each } from "svelte/internal"
     let canvasElement: HTMLCanvasElement;
 
     let selected:topic[];
@@ -94,6 +124,9 @@
 
     let edgeRelation:string;
 
+    let xC = 0;
+    let yC = 0;
+
 
     function scaleup() {
         scale+=.1;
@@ -104,6 +137,21 @@
     }
     function scaledown() {
         scale-=.1;
+        if(ctx) {
+            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+            drawTopics(ctx);
+        }
+    }
+
+    function scaleupWheel() {
+        scale+=.005;
+        if(ctx) {
+            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+            drawTopics(ctx);
+        }
+    }
+    function scaledownWheel() {
+        scale-=.005;
         if(ctx) {
             ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
             drawTopics(ctx);
@@ -123,7 +171,35 @@
             drawTopics(ctx);
         }
 
+        let drag = false;
+
+        let isdragging = false;
+
+        // canvasElement.onmousedown = function(ev: MouseEvent){
+        //     drag = true;
+        // };
+
+        canvasElement.onmouseup = function(ev: MouseEvent){
+            console.log("here");
+            isdragging = false;
+        };
+
         canvasElement.onmousemove = function(e) {
+
+            // if(isdragging)
+            //     drag = true;
+            // else 
+            //     drag = false;
+
+            // console.log(drag)
+
+            // if(!moveSelect && drag && ctx) {
+            //     xC+=e.movementX;
+            //     yC+=e.movementY;
+            //     ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+            //     drawTopics(ctx);
+            //     return;
+            // }
 
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
             var y = e.clientY - canvasElement.getClientRects()[0].top - canvasElement.height/2;
@@ -166,7 +242,9 @@
                 }
             }
             else if(ctx) {
-                canvasElement.style.cursor = "grab"; 
+                canvasElement.style.cursor = "move"; 
+                p[0] += 100;
+                p[1] += 100;
                 moveSelect.location = p;
                 ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
                 drawTopics(ctx);
@@ -178,7 +256,7 @@
             else if(chge)
                 canvasElement.style.cursor = "grab"; 
             else {
-                canvasElement.style.cursor = "default";
+                canvasElement.style.cursor = "grab";
                 hovering = null;
             }
         };
@@ -190,6 +268,7 @@
 
 
         canvasElement.onclick = function(e) {
+
 
             var x = e.clientX - canvasElement.getClientRects()[0].left - canvasElement.width/2;
             var y = e.clientY - canvasElement.getClientRects()[0].top - canvasElement.height/2;
@@ -230,16 +309,8 @@
                                 }
                                 selected.push(g[i]);
                                 if(ctx){
-                                    ctx.translate(canvasElement.width/2, canvasElement.height/2);
-                                    ctx.beginPath();
-                                    ctx.ellipse(t[0],t[1],(g[i].size)*s,(g[i].size)*s, 0,0,2*Math.PI);
-                                    ctx.closePath();
-
-                                    ctx.lineWidth = 4;
-                                    ctx.strokeStyle = 'rgb(100, 100, 100)';
-                                    ctx.stroke();
-                                    ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
-
+                                    ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                                    drawTopics(ctx);
                                 }
 
                                 selected = selected;
@@ -250,13 +321,20 @@
                         } 
                     
                     }
-                    if(!done)
+                    if(!done) {
+                        selected = [];
+                        if(ctx) {
+                            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                            drawTopics(ctx);
+                        }
+                        
                         for(let i = 0;i<g.length;i++){
                             let t = g[i].location;
                             if(t && !g[i].root) {
                                 if(dist(p,t)<g[i].size*s){
                                     if(!moveSelect){
                                         moveSelect = g[i];
+                                        done = true;
                                         break;
                                     } else {
                                         moveSelect = null;
@@ -266,6 +344,11 @@
                                 }
                             }
                         }
+                    }
+                    
+                    if(!done && moveSelect) {
+                        moveSelect = null;
+                    }
                 }
                 
 
@@ -275,8 +358,6 @@
                 
             }, 200);
 
-
-            
         
         }
 
@@ -331,6 +412,10 @@
             return;
         }
 
+        if(selected[0].root && selected[1].root)
+            eList.push([selected[0].root.name+" : "+selected[0].name,selected[1].root.name+" : "+selected[1].name,edgeRelation])
+
+        eList = eList;
 
 
         // animate the edge creation
@@ -388,7 +473,10 @@
         
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
 
+        ctx.translate(xC,yC);
+
         ctx.scale(scale,scale);
+
 
         for(let i = 0;i<g.length;i++) {
             if(g[i].root==null && g[i].tpL.length!=0) {
@@ -564,12 +652,20 @@
                         // ctx.lineWidth = 1;
                         // ctx.strokeStyle = 'black';
                         // ctx.stroke();
+
+                        
                         
                         
                         ctx.fill();
 
                         ctx.fillStyle = 'black';
                         ctx.font = "20px Arial";
+
+                        if(selected.includes(g[i])) {
+                            ctx.lineWidth = 5;
+                            ctx.strokeStyle = 'rgb(100,100,100)';
+                            ctx.stroke();
+                        }
 
                         let addx = 0;
                         let addy = num*s+15;
@@ -588,7 +684,9 @@
             }
 
 
-            ctx.scale(1/scale,1/scale);
+        ctx.scale(1/scale,1/scale);
+
+        ctx.translate(-xC,-yC);
 
         ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
     }
@@ -596,6 +694,8 @@
     function drawTopicsAnimateEdge(ctx: CanvasRenderingContext2D, a:number, fc:number, pa:point, pb:point){
         
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
+
+        ctx.translate(xC,yC);
 
         ctx.scale(scale,scale);
 
@@ -815,7 +915,10 @@
             }
 
 
-            ctx.scale(1/scale,1/scale);
+        ctx.scale(1/scale,1/scale);
+
+
+        ctx.translate(-xC,-yC);
 
         ctx.translate(-canvasElement.width/2, -canvasElement.height/2);
     }
@@ -941,14 +1044,39 @@
         back("back");
     }
 
+    let tpCache: TouchEvent[];
+
+    tpCache = [];
+
+    window.onwheel = function(e:WheelEvent) {
+        if(e.deltaY>0) {
+            for(let i = 0;i<10;i++)
+                scaleupWheel();
+        } else {
+            for(let i = 0;i<10;i++)
+                scaledownWheel();
+        }
+    };
+
+
+
 
 </script>
 
 <div class="container">
+    <div class="grid">
+
+    </div>
+    <div class="graphNodes">
         <canvas bind:this={canvasElement} width="1000" height="700">
 
         </canvas>
         <div class="side">
+            {#if selected.length==0}
+                <div class="selectionM">
+                    Click on a node to make a connection!
+                </div>
+            {/if}
             {#if selected.length==1}
                 <div class="selection1">
                     {selected[0].name}
@@ -959,54 +1087,87 @@
                     <div class="title">
                         {selected[0].name}
                     </div>
-                    {#each selected[0].tpL as tg}
-                        <div class="edges" style="font-size:1em;">
-                            -{tg.name}
-                        </div>
-                    {/each}
                     
                 </div>
                 <div class="selection2">
                     <div class="title">
                         {selected[1].name}
                     </div>
-                    {#each selected[1].tpL as tg}
-                        <div class="edges" style="font-size:1em;">
-                            -{tg.name}
-                        </div>
-                    {/each}
                 </div>
                 <div class="relation" contenteditable="true" bind:textContent={edgeRelation}>
                     is the same as 
                 </div>
-                <div class="selectionH">
-                    <button on:click={addEdge}>
-                        Connect
-                    </button>
-                </div>
+                
             {/if}
-            {#if hovering!=null && selected.length!=2}
-                <div class="selectionH">
-                    {hovering.name}
-                </div>
-            {/if}
+            
         </div>
 
-        <div class="landing">
-            <button on:click={backToLanding}>Note Landing</button>
+        {#if selected.length==2}
+            <button on:click={addEdge} class="connect">
+                Connect
+            </button>
+        {/if}
+        {#if hovering!=null && selected.length!=2}
+            <div class="connect" style="background-color:transparent; color:#242424">
+                {hovering.name}
+            </div>
+        {/if}
+
+        <div class="showEdges">
+            <div class="edgesTitle">
+                Edges
+            </div>
+            {#each eList as e}
+                <div class="edges">
+                    {e[0]+ " " + e[2] + " " + e[1]}
+                </div>
+            {/each}
         </div>
 
-        <div class="scaleup">
+            <button on:click={backToLanding} class="landing">
+                <div class="icon">
+                    <MdHome></MdHome>
+                </div>
+            </button>
+
+        <!-- <div class="scaleup">
             <button on:click={scaleup}>+</button>
         </div>
         <div class="scaledown">
             <button on:click={scaledown}>-</button>
-        </div>
+        </div> -->
+    </div>
+        
     
 </div>
 
 
 <style> 
+
+.grid{
+
+    position: absolute;
+    top:0;
+    left:0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+
+    background-image: url("assets/Locator_Grid.png");
+
+
+    opacity: 20%;
+
+    filter: grayscale(100%);
+}
+
+.icon {
+        color: whitesmoke;
+        width: 32px;
+        height: 32px;
+    }
 .container{
     height: fit-content;
 
@@ -1014,11 +1175,32 @@
 
     border-radius: 5px;
 
-    background-color: rgb(179, 200, 200);
+
+
+    background-color: white;
+
+    padding-top: 10vh;
+    padding-bottom: 10vh;
+    
+
+
 
     
 
     /* margin-top: 5em; */
+}
+
+.graphNodes{
+
+    position: absolute;
+    top:0;
+    left:0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 2;
+
 }
 .selection1{
     display: flex;
@@ -1026,16 +1208,35 @@
     justify-content: center;
     align-items: center;
 
-    font-size: 3em;
+    font-size: 2em;
 
     position: absolute;
-    top: 0vh;
+    top: 5vh;
     left: 10vw;
 
-    width: 50vw;
+    width: 30vw;
     height: 10vh;
 
-    color: #242424;
+    color: whitesmoke;
+
+    background-color: transparent;
+}
+.selectionM{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 2em;
+
+    position: absolute;
+    top: 5vh;
+    left: 20vw;
+
+    width: 60vw;
+    height: 10vh;
+
+    color: whitesmoke;
 
     background-color: transparent;
 }
@@ -1045,36 +1246,31 @@
     justify-content: center;
     align-items: center;
 
-    font-size: 3em;
+    font-size: 2em;
 
     position: absolute;
-    top: 0vh;
+    top: 5vh;
     right: 10vw;
 
-    width: 50vw;
+    width: 30vw;
     height: 10vh;
 
-    color: #242424;
+    color: whitesmoke;
 
     background-color: transparent;
 }
-.selectionH{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    max-width: 60vw;
-    min-width: 60vw;
-
-    background-color: transparent;
-    z-index: 2;
+.connect{
     position: absolute;
     bottom: 10vh;
-    left:20vw;
+    left:45vw;
+
+    max-width: 60vw;
+    min-width: 10vw;
+
+    background-color: #242424;
 
 
-    color: #242424;
+    color: whitesmoke;
 
     font-size: 2em;
 }
@@ -1086,13 +1282,19 @@
     align-items: center;
 
 
-    background-color: transparent;
+    background-color: #242424;
     z-index: 2;
     position: absolute;
-    bottom: 5vh;
-    left:5vw;
+    top: 0vh;
+    left:0vw;
 
     font-size: 2em;
+
+    border: none;
+}
+
+.landing:hover{
+    border: none;
 }
 
 .scaleup{
@@ -1137,20 +1339,64 @@
     z-index: 2;
     position: absolute;
 
-    top: 0vh;
+    top: 5vh;
     right: 35vw;
 
     width: 30vw;
     height: 10vh;
 
 
-    color: #242424;
+    color: whitesmoke;
 
-    font-size: 2em;
+    font-size: 1.5em;
 }
-.edges {
-    color: #242424;
 
-    font-size: 1em;
+.relation:focus{
+    outline: none;
+}
+
+.edges {
+    padding-top: 10px;
+    color: #242424;
+    font-size: .8em;
+}
+
+.showEdges{
+    position: fixed;
+    left:0vw;
+    top:205px;
+
+    width:20vw;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    color:rgba(100, 100, 100, 1);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+
+    font-size: 1.5em;
+
+    z-index: 0;
+}
+
+.edgesTitle{
+    font-size: 2em;
+    color: rgba(50, 50, 50, 1);
+
+    border-bottom: 2px solid rgb(100,100,100);
+}
+
+.side{
+    background-color: #242424;
+    width: 100vw;
+    height:200px;
+
+    position: absolute;
+    top: 0;
+
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 </style>

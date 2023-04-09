@@ -68,7 +68,7 @@
 
     let seq = false;
 
-    type tagrange = [index:number, length:number, top:number, height:number, name:string, selected:boolean];
+    type tagrange = [index:number, length:number, top:number, height:number, name:string, selected:boolean, id:string];
 
 
     let activeRanges : tagrange[];
@@ -92,7 +92,7 @@
         if (range && range.length!=0) {
             var bounds = quill.getBounds(range.index, range.length);
 
-            activeRanges.push([range.index,range.length,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),false]);
+            activeRanges.push([range.index,range.length,bounds.top,bounds.height,"tag #"+(activeRanges.length+1),true,""+(activeRanges.length+1)]);
             console.log(range.index+" "+range.length);
             activeRanges = activeRanges;
 
@@ -225,6 +225,7 @@
                 }
 
 
+
                 activeRanges = activeRanges;
 
 
@@ -249,8 +250,7 @@
 
                         quill.deleteText(curPos.index-1,1);
 
-                        if(curPos.index-1!=0)
-                            quill.insertText(curPos.index-1, "\n");
+                        quill.insertText(curPos.index-1, "\n");
 
                         quill.format('size',Size.whitelist[Size.whitelist.length-1]);
 
@@ -260,7 +260,8 @@
 
                         var bounds = quill.getBounds(curPos.index-1, 1);
 
-                        activeRanges.push([curPos.index,1,bounds.top,bounds.height+60,"tag #"+(activeRanges.length+1),false]);
+                        activeRanges.push([curPos.index,1,bounds.top,bounds.height+60,"tag #"+(activeRanges.length+1),true,""+(activeRanges.length+1)]);
+
 
                         console.log(curPos.index + " ");
 
@@ -338,17 +339,17 @@
             noteId = noteId;
             title = focusNote.name;
             title = title;
-            hardSave();
+            //hardSave();
         } else if(focusNote.ops==null && noteId != focusNote.id) {
             console.log("updating display contents to nothing");
             quill.setText("");
             noteId = focusNote.id;
             title = focusNote.name;
-            hardSave();
+            //hardSave();
         }
         if(focusNote.name!=title) {
             focusNote.name = title;
-            hardSave();
+            //hardSave();
         }
 
     });
@@ -369,13 +370,19 @@
     async function hardSave() {
         chngCount = 0;
 
+        focusNote.tgL = [];
+
+        for(let i = 0;i<activeRanges.length;i++){
+            activeRanges[i][5] = false;
+            focusNote.tgL.push(JSON.stringify(activeRanges[i]));
+        }
+
 
         // check if not there
         if(focusNote.id!="") {
             await axios.put(url1+'/content/'+focusNote.id, {
                 content: focusNote.ops
             }).then(function (){
-                console.log('creating note');
             }).catch(function (error){
                 console.log(error);
             });
@@ -383,7 +390,15 @@
             await axios.put(url1+'/title/'+focusNote.id, {
                 title: focusNote.name
             }).then(function (){
-                console.log('creating note');
+            }).catch(function (error){
+                console.log(error);
+            });
+
+            await axios.put(url1+'/tags/'+focusNote.id, {
+                tags: focusNote.tgL
+            }).then(function (){
+
+                console.log("put the tag");
             }).catch(function (error){
                 console.log(error);
             });
@@ -403,11 +418,7 @@
 
         //focusNote.tgL = tagList;
 
-        focusNote.tgL = [];
-
-        for(let i = 0;i<activeRanges.length;i++){
-            focusNote.tgL.push(JSON.stringify(activeRanges[i]));
-        }
+        
         
     }
 
@@ -471,6 +482,7 @@
             }
         }
 
+        setFocusName(null);
         setFocusName(tgn);
     }
 
@@ -514,6 +526,7 @@
             }
         } else {
             subNoteList = [];
+            tagFocus = false;
         }
     }
 
@@ -527,21 +540,27 @@
         if(tgName) {
             hardSave();
             if(n.ops) {
-                console.log("updating display contents");
+
+                subNoteList = [];
+                
                 focusNote = n;
                 loadTextandZoom(n.ops, tgName);
                 noteId = n.id;
                 noteId = noteId;
                 title = n.name;
                 title = title;
-                hardSave();
+                //hardSave();
 
                 
 
-                console.log("here");
             }
             
         }
+    }
+
+    function deleteTag(id:string) {
+
+        activeRanges = activeRanges.filter(n => n[6]!=id);
     }
 
 
@@ -571,7 +590,7 @@
         <button class="ql-script" value="sub"></button>
         <button class="ql-script" value="super"></button>
 
-        <div style="width:30px">
+        <div style="height:30px">
 
         </div>
 
@@ -587,18 +606,18 @@
 
         {#each activeRanges as rng}
             {#if rng[5]}
-                <div class="tag2" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; width:20px;">
+                <div class="tag2" style="position:absolute; top:{rng[2]+215}px; height:{rng[3]}px; width:20px;">
 
                 </div>
             {/if}
             {#if !rng[5]}
-                <div class="tag1" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; width:20px;">
+                <div class="tag1" style="position:absolute; top:{rng[2]+215}px; height:{rng[3]}px; width:20px;">
 
                 </div>
             {/if}
             
             {#if rng[5]}
-            <div class="name" style="position:absolute; top:{rng[2]+255}px; height:{rng[3]}px; " bind:textContent={rng[4]} on:focus={()=>{rng[5]=true}} contenteditable="true">
+            <div class="name" style="position:absolute; top:{rng[2]+215}px; height:{rng[3]}px; " bind:textContent={rng[4]} on:focus={()=>{rng[5]=true}} contenteditable="true">
                 {rng[4]}
             </div>
             {/if}
@@ -610,11 +629,19 @@
                 <div class="tagsTitle">
                     Active Tags
                 </div>
+                <div style="width:15vw;display:flex;flex-direction:column;align-items:left; justify-content:space-around;">
                 {#each activeRanges as rng}
-                    <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} >
-                        {rng[4]}
+                    <div style="width:20vw;display:flex;flex-direction:row;align-items:center; justify-content:left;">
+                
+                        <button class="delete" on:click={()=>deleteTag(rng[6])}>
+                            X
+                        </button>
+                        <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} >
+                            {rng[4]}
+                        </div>
                     </div>
                 {/each}
+                </div>
             </div>
             <div class="tagNav">
                 {#if tagName!=null}
@@ -623,9 +650,10 @@
                             References
                         </div>
                         {#each subNoteList as refs}
-                            <div class="activeName" tabindex="-1" on:focusin={()=>{gotoReference(refs, tagName)}}>
+                            <button class="activeRef" on:click={()=>{gotoReference(refs, tagName);}}>
                                 {refs.name}
-                            </div>
+                            </button>
+                            
                         {/each}
                     {/if}
                 {/if}
@@ -702,10 +730,28 @@
         background-color: rgba(100, 100, 100, 1);
     }
 
+    .delete{
+        background-color: transparent;
+        color: brown;
+        border:none;
+        width:1.1em;
+        height: 1.1em;
+        font-size: .8em;
+
+        padding: 0;
+        margin: 0;
+
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+
     .showTags{
         position: fixed;
         right:0vw;
-        top:25vh;
+        top:205px;
 
         width:20vw;
 
@@ -767,7 +813,7 @@
 
     .activeName{
         color: rgba(100, 100, 100, 1);
-        font-size: 1.5em;
+        font-size: 1vw;
         left:11vw;
 
         width:fit-content;
@@ -777,6 +823,29 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
+        cursor: pointer;
+
+        padding: 20px;
+    }
+
+    .activeRef{
+        color: rgba(100, 100, 100, 1);
+        font-size: .7em;
+        left:11vw;
+        font-style: normal;
+
+        width:fit-content;
+
+        max-width:8vw;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background-color: transparent;
+        border: none;
+
 
         cursor: pointer;
     }
@@ -800,9 +869,16 @@
     #toolbar{
         border-color: rgb(100,100,100);
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
+
+        position: fixed;
+        top:240px;
+        right:21vw;
+
+        z-index: 1;
+
     }
 
     .container{

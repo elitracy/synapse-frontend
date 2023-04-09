@@ -42,7 +42,11 @@
               on:click={() => clicked++}
               title="Share">share</IconButton
             > -->
-            <IconButton on:click={deleteNote} title="More options"><FaRegTrashAlt/></IconButton>
+            <IconButton on:click={deleteNote} title="More options">
+                <div class="icon">
+                  <FaRegTrashAlt/>
+                </div>
+              </IconButton>
             
           </ActionIcons>
         </Actions>
@@ -132,6 +136,13 @@
 
     .card{
       height: 8vh;
+    }
+
+
+    .icon {
+        color: rgb(60,60,60);
+        width: 32px;
+        height: 32px;
     }
     
   </style>
