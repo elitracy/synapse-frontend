@@ -50,6 +50,22 @@
             
           </ActionIcons>
         </Actions>
+        {#if dClicked}
+        <div class="card-display">
+          <div class="card-container">
+            <Card>
+              <Content component={List}>
+                <Item on:click={() => clicked++}>
+                  <Text>Rename</Text>
+                </Item>
+                <Item on:click={() => clicked++}>
+                  <Text>Delete</Text>
+                </Item>
+              </Content>
+            </Card>
+          </div>
+        </div>
+        {/if}
       </Card>
     </div>
   
@@ -83,7 +99,9 @@
     import axios from 'axios';
     import FaRegTrashAlt from 'svelte-icons/fa/FaRegTrashAlt.svelte'
 
+    import List, { Item, Text } from '@smui/list';
     let clicked = 0;
+    let dClicked = false;
     export let noteName : string;
     export let noteCategory : string;
     export let noteId: string;
@@ -97,6 +115,7 @@
 
     const url1 = "https://api.synapsenote.com/api/notes";
     const url = "https://api.synapsenote.com/api/users";
+
 
     function reportID() {
       dispatch1('id', noteId);
