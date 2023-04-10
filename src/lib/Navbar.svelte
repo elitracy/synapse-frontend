@@ -21,9 +21,20 @@
   import Sidebar from './Sidebar.svelte';
   
   import { createEventDispatcher } from 'svelte';
+
+  const dispatchProfile = createEventDispatcher<{profile:void}>();
+  const dispatchLanding = createEventDispatcher<{noteLanding:void}>();
   
   const dispatch = createEventDispatcher<{toFocus:string}>();
   const dispatch1 = createEventDispatcher<{make:Boolean}>();
+
+  function goProfile() {
+    dispatchProfile('profile');
+  }
+
+  function goLanding() {
+    dispatchLanding('noteLanding');
+  }
 
   function toFocus(message: CustomEvent<string>) {
       // report the new noteID
@@ -53,10 +64,10 @@
     <Row>
       <Section>
         <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton>
-        <Title>Synapse</Title>
+        <Title style="cursor:pointer" on:click={goLanding}>Synapse</Title>
       </Section>
       <Section align="end" toolbar>
-        <IconButton class="material-icons" aria-label="Download"
+        <IconButton class="material-icons" on:click={goProfile} aria-label="Download"
           >account_circle</IconButton
         >
         

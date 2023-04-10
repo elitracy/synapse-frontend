@@ -44,8 +44,9 @@
     // import type Delta from "quill/node_modules/quill-delta";
 
     let displayNote = true;
-    const dispatch1 = createEventDispatcher<{make:note}>();
-    const dispatch2 = createEventDispatcher<{changeNoteList:note[]}>();
+    // const dispatch1 = createEventDispatcher<{profile:void}>();
+    //const dispatch1 = createEventDispatcher<{make:note}>();
+    // const dispatch2 = createEventDispatcher<{changeNoteList:note[]}>();
 
     export let uID: string;
     type notes = note[];
@@ -125,7 +126,6 @@
 
 </script>
 
-<Navbar noteList={noteList} />
 <div class="container">
     <p style="font-size:4em">Update Profile Settings</p>
     <br>

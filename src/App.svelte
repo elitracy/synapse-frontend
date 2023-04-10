@@ -116,6 +116,10 @@
     landing = 0;
   }
 
+  function gotoUserProfile() {
+    landing = 3;
+  }
+
   function setNoteList(message: CustomEvent<note[]>) {
     notes = message.detail;
   }
@@ -133,14 +137,20 @@
   {/if}
   {#if page==1}
     {#if landing==0}
+    <Navbar on:profile={gotoUserProfile} on:noteLanding={gotoLanding} noteList={notes} />
     <NoteLanding noteList={notes} on:make={gotoNote} uID={uID} on:changeNoteList={setNoteList}/>
-    <!-- <UserProfile noteList={notes} on:make={gotoNote} uID={uID} on:changeNoteList={setNoteList}/> -->
     {/if}
     {#if landing==1}
+    <Navbar on:profile={gotoUserProfile} on:noteLanding={gotoLanding} noteList={notes} />
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
     {/if}
     {#if landing==2}
+    <Navbar on:profile={gotoUserProfile} on:noteLanding={gotoLanding} noteList={notes} />
     <GraphLanding noteList={notes} on:back={gotoLanding} uID={uID}/>
+    {/if}
+    {#if landing==3}
+      <Navbar on:profile={gotoUserProfile} on:noteLanding={gotoLanding} noteList={notes} />
+      <UserProfile noteList={notes} uID={uID}/>
     {/if}
   {/if}
 

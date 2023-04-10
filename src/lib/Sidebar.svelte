@@ -15,9 +15,9 @@
                     
                 {/if}
             {/each}
-            <IconButton class="material-icons"  aria-label="Download" on:click={newNote} style="color:black;"
+            <!-- <IconButton class="material-icons"  aria-label="Download" on:click={newNote} style="color:black;"
             >add_box</IconButton
-            >
+            > -->
         </nav>
     <!-- {/if} -->
     <!-- {#if !atTop}
