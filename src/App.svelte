@@ -138,7 +138,7 @@
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
     {/if}
     {#if landing==2}
-    <GraphLanding noteList={notes} on:back={gotoLanding}/>
+    <GraphLanding noteList={notes} on:back={gotoLanding} uID={uID}/>
     {/if}
   {/if}
 

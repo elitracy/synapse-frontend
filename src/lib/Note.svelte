@@ -475,14 +475,12 @@
         if(tgn) {
             for(let j = 0;j<activeRanges.length;j++) {
                 if(activeRanges[j][4]==tgn) {
-                    activeRanges[j][5] = true;
                     zoomTo(activeRanges[j][2]+150);
                     break;
                 }
             }
         }
 
-        setFocusName(null);
         setFocusName(tgn);
     }
 
@@ -509,6 +507,7 @@
     subNoteList = [];
 
     function setFocusName(s:string|null){
+        clearTagDisplay();
         tagName = s;
 
         if(tagName)
@@ -561,6 +560,10 @@
     function deleteTag(id:string) {
 
         activeRanges = activeRanges.filter(n => n[6]!=id);
+    }
+
+    function init(el:HTMLDivElement){
+        el.focus();
     }
 
 
@@ -617,10 +620,12 @@
             {/if}
             
             {#if rng[5]}
-            <div class="name" style="position:absolute; top:{rng[2]+215}px; height:{rng[3]}px; " bind:textContent={rng[4]} on:focus={()=>{rng[5]=true}} contenteditable="true">
-                {rng[4]}
-            </div>
+                <div class="name" style="position:absolute; top:{rng[2]+215}px; height:{rng[3]}px; " bind:textContent={rng[4]} contenteditable="true" use:init>
+                    {rng[4]}
+                </div>
             {/if}
+
+
             
         {/each}
 
@@ -636,7 +641,7 @@
                         <button class="delete" on:click={()=>deleteTag(rng[6])}>
                             X
                         </button>
-                        <div class="activeName" tabindex="-1" on:focus={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);rng[5]=true}} >
+                        <div class="activeName" tabindex="-1" on:focusin={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);}} >
                             {rng[4]}
                         </div>
                     </div>
@@ -650,7 +655,7 @@
                             References
                         </div>
                         {#each subNoteList as refs}
-                            <button class="activeRef" on:click={()=>{gotoReference(refs, tagName);}}>
+                            <button class="activeRef" on:click={()=>{gotoReference(refs, tagName);clearTagDisplay();setFocusName(null);}}>
                                 {refs.name}
                             </button>
                             

@@ -31,6 +31,10 @@
     import type Delta from "../../node_modules/@types/quill/node_modules/quill-delta";
     import { createEventDispatcher } from 'svelte';
     import MdHome from 'svelte-icons/md/MdHome.svelte';
+    import axios from 'axios';
+  
+    const url = "https://api.synapsenote.com/api/users";
+    const url1 = "https://api.synapsenote.com/api/notes";
 
     export let noteList: note[];
   
@@ -41,7 +45,7 @@
     let scale = 1;
 
 
-    type Edge = [from:string, to:string, how:string];
+    type Edge = [from:string, to:string, how:string, format:string];
 
     let eList: Edge[];
 
@@ -61,7 +65,7 @@
 
         let roots = [];
         for(let k = 0;k<ntL.length;k++) {
-            g.push({size:ntL[k].tgL.length*2+10,name:ntL[k].name, tpL:[], root:null,location:null, color:`hsla(${Math.random()*(360)},${100}%,${75}%, 0.1)`});
+            g.push({size:ntL[k].tgL.length*2+10,name:ntL[k].name, tpL:[], root:null,location:null, color:`rgba(175,175,175, 0.9)`});
 
             roots.push(g.length-1);
 
@@ -85,10 +89,12 @@
                 if(k!=l) {
                     for(let i = 0;i<ntL[k].tgL.length;i++) {
                         for(let j = 0;j<ntL[l].tgL.length;j++) {
-                            if(JSON.parse(ntL[l].tgL[j])[4] == JSON.parse(ntL[k].tgL[i])[4]) {
+                            if(JSON.parse(ntL[l].tgL[j])[4] == JSON.parse(ntL[k].tgL[i])[4] && !g[roots[k]].tpL.includes(g[roots[l]]) && !g[roots[l]].tpL.includes(g[roots[k]])) {
                                 g[roots[k]].tpL.push(g[roots[l]]);
-                                console.log(ntL[l].tgL[j][4]);
-                                eList.push([g[roots[k]].name,g[roots[l]].name,`shares topic ${JSON.parse(ntL[l].tgL[j])[4]} with`]);
+
+                                let d =`<p><b>${g[roots[k]].name}</b> shares topic <u>${JSON.parse(ntL[l].tgL[j])[4]}</u> with <b>${g[roots[l]].name}</b></p>`;
+
+                                eList.push([g[roots[k]].name,g[roots[l]].name,`shares topic ${JSON.parse(ntL[l].tgL[j])[4]} with`, d]);
                                 eList = eList;
                             }
                         }
@@ -101,7 +107,20 @@
 
     onMount(async () => {
         makeNodes();
+        axios.get(url+"/"+uID+"/adj_list",{
 
+        }).then(function (response) {
+            if(response.data.tag_adjacency_list) {
+                eList = JSON.parse(response.data.tag_adjacency_list);
+
+                eList = eList;
+
+                eList = eList.filter(n => n[0]!=n[1]);
+
+                console.log(eList);
+            }
+            makeAllPreKnownEdges();
+        });
     });
 
 
@@ -111,7 +130,11 @@
     import { draw } from "svelte/transition"
     import type { X } from "vitest/dist/types-0373403c"
     import { each } from "svelte/internal"
+
     let canvasElement: HTMLCanvasElement;
+
+
+    export let uID:string;
 
     let selected:topic[];
     selected = [];
@@ -168,6 +191,7 @@
 
         if(ctx) {
             initializePoints();
+            ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
             drawTopics(ctx);
         }
 
@@ -178,11 +202,6 @@
         // canvasElement.onmousedown = function(ev: MouseEvent){
         //     drag = true;
         // };
-
-        canvasElement.onmouseup = function(ev: MouseEvent){
-            console.log("here");
-            isdragging = false;
-        };
 
         canvasElement.onmousemove = function(e) {
 
@@ -243,8 +262,6 @@
             }
             else if(ctx) {
                 canvasElement.style.cursor = "move"; 
-                p[0] += 100;
-                p[1] += 100;
                 moveSelect.location = p;
                 ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
                 drawTopics(ctx);
@@ -402,6 +419,8 @@
 
     function addEdge() {
                     
+        if(selected.length<2)
+            return;
 
         if(selected[0].tpL.includes(selected[1]) || selected[1].tpL.includes(selected[0])){
             selected = [];
@@ -412,9 +431,11 @@
             return;
         }
 
-        if(selected[0].root && selected[1].root)
-            eList.push([selected[0].root.name+" : "+selected[0].name,selected[1].root.name+" : "+selected[1].name,edgeRelation])
+        if(selected[0].root && selected[1].root) {
 
+            let d = "<b>"+selected[0].root.name+"</b>:<u>"+selected[0].name+"</u> " + edgeRelation + " <b>"+selected[1].root.name+"</b>:<u>"+selected[1].name+"</u>";
+            eList.push([selected[0].root.name+":"+selected[0].name,selected[1].root.name+":"+selected[1].name,edgeRelation,d])
+        }
         eList = eList;
 
 
@@ -433,14 +454,14 @@
                     selected[0].tpL.push(selected[1]);
 
                     selected[0].tpL = selected[0].tpL;
-                    selected[1].tpL.push(selected[0]);
+                    // selected[1].tpL.push(selected[0]);
 
-                    selected[1].tpL = selected[1].tpL;
+                    // selected[1].tpL = selected[1].tpL;
                     selected = [];
                 }
                 
             }
-            let fc = 50;
+            let fc = 30;
             let pa:point;
             let pb:point;
 
@@ -460,6 +481,165 @@
             
         }
 
+        console.log(eList);
+
+        axios.post(url+"/"+uID+"/adj_list",{
+            adj_list:JSON.stringify(eList)
+        }).then(function (response) {
+        });
+
+    }
+
+    function makeAllPreKnownEdges(){
+        for(let i = 0;i<eList.length;i++) {
+            console.log(eList[i][0]);
+            if(eList[i][0].split(":").length==2) {
+
+                let r1 = eList[i][0].split(":")[0];
+                let n1 = eList[i][0].split(":")[1];
+
+
+                let r2 = eList[i][1].split(":")[0];
+                let n2 = eList[i][1].split(":")[1];
+
+                let a:topic|null;
+                let b:topic|null;
+
+                a = null;
+                b = null;
+
+                for(let j = 0;j<g.length;j++) {
+                    let rt = g[j].root;
+                    if(rt) {
+                        if(rt.name==r1 && g[j].name==n1) {
+                            a = g[j];
+                        }
+                    }
+                }
+
+                for(let j = 0;j<g.length;j++) {
+                    let rt = g[j].root;
+                    if(rt) {
+                        if(rt.name==r2 && g[j].name==n2) {
+                            b = g[j];
+                        }
+                    }
+                }
+
+                if(a && b) {
+                    console.log(a.name + " " + b.name);
+                    let a1:topic;
+                    a1 = a;
+                    let b1:topic;
+                    b1 = b;
+                    setTimeout(()=>addEdgeFromKnown(a1,b1), 800*i);
+
+                    
+                }
+            }
+            
+        }
+    }
+
+    function removeEdge(e:Edge){
+            if(e[0].split(":").length==2) {
+
+                let r1 = e[0].split(":")[0];
+                let n1 = e[0].split(":")[1];
+
+
+                let r2 = e[1].split(":")[0];
+                let n2 = e[1].split(":")[1];
+
+                let a:topic|null;
+                let b:topic|null;
+
+                a = null;
+                b = null;
+
+                for(let j = 0;j<g.length;j++) {
+                    let rt = g[j].root;
+                    if(rt) {
+                        if(rt.name==r1 && g[j].name==n1) {
+                            a = g[j];
+                        }
+                    }
+                }
+
+                for(let j = 0;j<g.length;j++) {
+                    let rt = g[j].root;
+                    if(rt) {
+                        if(rt.name==r2 && g[j].name==n2) {
+                            b = g[j];
+                        }
+                    }
+                }
+
+                if(a && b) {
+                    let a1:topic;
+                    a1 = a;
+                    let b1:topic;
+                    b1 = b;
+                    
+                    a1.tpL = a1.tpL.filter(n => n!=b1);
+                    b1.tpL = b1.tpL.filter(n => n!=a1);
+
+                    
+                }
+            }
+    }
+
+    function addEdgeFromKnown(g0:topic, g1:topic) {
+
+        // if(g0.root && g1.root) {
+
+        //     let d = "<b>"+g0.root.name+"</b>:<u>"+g0.name+"</u> " + edgeRelation + " <b>"+g1.root.name+"</b>:<u>"+g1.name+"</u>";
+        //     eList.push([g0.root.name+":"+g0.name,g1.root.name+":"+g1.name,edgeRelation,d])
+        // }
+        // eList = eList;
+
+
+        // animate the edge creation
+        if(ctx) {
+            function animateEdge(ctx: CanvasRenderingContext2D | null, a:number, fc:number, pa:point, pb:point) {
+
+                if(ctx) {
+                    ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                    drawTopicsAnimateEdge(ctx,a,fc, pa, pb);
+                }
+
+                if(a<fc)
+                    setTimeout(()=>requestAnimationFrame(()=>animateEdge(ctx,a+1,fc,pa,pb)), 1);
+                else {
+                    g0.tpL.push(g1);
+
+                    g0.tpL = g0.tpL;
+                    // g1.tpL.push(g0);
+
+                    // g1.tpL = g1.tpL;
+                }
+                
+            }
+            let fc = 30;
+            let pa:point;
+            let pb:point;
+
+            pa = [0,0];
+            pb = [0,0];
+
+            let rtl1 = g0.root?.location;
+            let rtl2 = g1.root?.location;
+
+            if(g0.location && rtl1)
+                pa = [g0.location[0]+rtl1[0],g0.location[1]+rtl1[1]];
+            if(g1.location && rtl2)
+                pb = [g1.location[0]+rtl2[0],g1.location[1]+rtl2[1]];
+
+            requestAnimationFrame(()=>animateEdge(canvasElement.getContext("2d"), 1, fc,pa,pb));
+
+            
+        }
+
     }
 
 
@@ -471,6 +651,7 @@
 
     function drawTopics(ctx: CanvasRenderingContext2D){
         
+        ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
 
         ctx.translate(xC,yC);
@@ -502,8 +683,8 @@
                                 ctx.moveTo(...p);
                                 ctx.lineTo(p1[0],p1[1]);
 
-                                ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(100,100,100,.1)';
+                                ctx.lineWidth = 30;
+                                ctx.strokeStyle = 'rgba(100,100,100,.2)';
                                 
                                 ctx.stroke();
                             }
@@ -603,7 +784,7 @@
                                 ctx.lineTo(p1[0],p1[1]);
 
                                 ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                                ctx.strokeStyle = 'rgba(0,0,0,.4)';
                                 
                                 ctx.stroke();
                             }
@@ -663,7 +844,7 @@
 
                         if(selected.includes(g[i])) {
                             ctx.lineWidth = 5;
-                            ctx.strokeStyle = 'rgb(100,100,100)';
+                            ctx.strokeStyle = 'rgb(100,100,100,.8)';
                             ctx.stroke();
                         }
 
@@ -693,6 +874,7 @@
 
     function drawTopicsAnimateEdge(ctx: CanvasRenderingContext2D, a:number, fc:number, pa:point, pb:point){
         
+        ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
         ctx.translate(canvasElement.width/2, canvasElement.height/2);
 
         ctx.translate(xC,yC);
@@ -723,8 +905,8 @@
                                 ctx.moveTo(...p);
                                 ctx.lineTo(p1[0],p1[1]);
 
-                                ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(100,100,100,.1)';
+                                ctx.lineWidth = 30;
+                                ctx.strokeStyle = 'rgba(100,100,100,.2)';
                                 
                                 ctx.stroke();
                             }
@@ -819,7 +1001,7 @@
                                 ctx.lineTo(p1[0],p1[1]);
 
                                 ctx.lineWidth = 5;
-                                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                                ctx.strokeStyle = 'rgba(0,0,0,.4)';
                                 
                                 ctx.stroke();
 
@@ -849,7 +1031,7 @@
         ctx.bezierCurveTo(c1[0],c1[1],c2[0],c2[1],pb[0],pb[1]);
 
         ctx.lineWidth = 5;
-        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.strokeStyle = 'rgba(0,0,0,.4)';
         
         ctx.stroke();
 
@@ -1058,6 +1240,20 @@
         }
     };
 
+    function deleteEdge(e: Edge){
+        eList = eList.filter(n => n!=e);
+
+        axios.post(url+"/"+uID+"/adj_list",{
+            adj_list:JSON.stringify(eList)
+        }).then(function (response) {
+            removeEdge(e);
+            if(ctx) {
+                ctx.clearRect(0,0,canvasElement.width,canvasElement.height);
+                drawTopics(ctx);
+            }
+        });
+    }
+
 
 
 
@@ -1072,9 +1268,9 @@
 
         </canvas>
         <div class="side">
-            {#if selected.length==0}
+            {#if selected.length==0 && hovering==null}
                 <div class="selectionM">
-                    Click on a node to make a connection!
+                    Click on two nodes to make a connection!
                 </div>
             {/if}
             {#if selected.length==1}
@@ -1108,7 +1304,7 @@
             </button>
         {/if}
         {#if hovering!=null && selected.length!=2}
-            <div class="connect" style="background-color:transparent; color:#242424">
+            <div class="selectionM" style="background-color:transparent; color:whitesmoke">
                 {hovering.name}
             </div>
         {/if}
@@ -1117,11 +1313,18 @@
             <div class="edgesTitle">
                 Edges
             </div>
+            <div style="width:15vw;display:flex;flex-direction:column;align-items:left; justify-content:space-around;">
             {#each eList as e}
+            <div style="width:20vw;display:flex;flex-direction:row;align-items:center; justify-content:left;">
+                <button class="delete" on:click={()=>deleteEdge(e)}>
+                    X
+                </button>
                 <div class="edges">
-                    {e[0]+ " " + e[2] + " " + e[1]}
+                    {@html e[3]}
                 </div>
+            </div>
             {/each}
+            </div>
         </div>
 
             <button on:click={backToLanding} class="landing">
@@ -1143,6 +1346,23 @@
 
 
 <style> 
+
+.delete{
+    background-color: transparent;
+    color: brown;
+    border:none;
+    width:1.1em;
+    height: 1.1em;
+    font-size: .8em;
+
+    padding: 0;
+    margin: 0;
+
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .grid{
 
@@ -1359,6 +1579,7 @@
     padding-top: 10px;
     color: #242424;
     font-size: .8em;
+    padding-left: 20px;
 }
 
 .showEdges{
@@ -1380,6 +1601,8 @@
     font-size: 1.5em;
 
     z-index: 0;
+
+    overflow-y: scroll;
 }
 
 .edgesTitle{
