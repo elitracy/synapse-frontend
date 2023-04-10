@@ -666,7 +666,11 @@
             
             
         {/if}
-    </div>    
+    </div> 
+    
+    <div class="gpt">
+
+    </div>
     
 
 
@@ -701,6 +705,17 @@
         color: rgb(60,60,60);
         width: 32px;
         height: 32px;
+    }
+
+    .gpt{
+        position: fixed;
+        bottom: 1vh;
+        right: 7vw;
+
+        width: 10vw;
+        height: 5em;
+
+        background-color: beige;
     }
 
     .tag1{
