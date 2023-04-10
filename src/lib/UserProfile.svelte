@@ -127,7 +127,7 @@
 </script>
 
 <div class="container">
-    <p style="font-size:4em">Update Profile Settings</p>
+    <p style="font-size:4em;padding-bottom:50px;">Update Profile Settings</p>
     <br>
     <br>
     <br>
@@ -202,9 +202,15 @@ href="https://fonts.googleapis.com/css?family=Roboto+Mono"
     height: fit-content;
     width:90%;
     margin: 3em;
-    background-color: white;
+    background-color: lightgray;
 
     color: #242424;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    margin: 10vh;
 }
 p {
     margin-block-start: 0;
