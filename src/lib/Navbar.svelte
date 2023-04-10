@@ -49,7 +49,7 @@
   export let noteList: notes;
 </script>
 
-<TopAppBar bind:this={topAppBar} variant="short" style="background-color:#50656e;">
+<TopAppBar bind:this={topAppBar} variant="short" style="background-color: #205479;">
     <Row>
       <Section>
         <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton>

@@ -1,5 +1,5 @@
 <style>
-
+ 
 </style>
 
 <script lang="ts" context="module">
@@ -19,6 +19,7 @@
   import Navbar from './lib/Navbar.svelte';
   import axios from 'axios';
   import NoteLanding from './lib/NoteLanding.svelte';
+  import UserProfile from './lib/UserProfile.svelte';
 
   import { afterUpdate } from 'svelte';
 
@@ -133,6 +134,7 @@
   {#if page==1}
     {#if landing==0}
     <NoteLanding noteList={notes} on:make={gotoNote} uID={uID} on:changeNoteList={setNoteList}/>
+    <!-- <UserProfile noteList={notes} on:make={gotoNote} uID={uID} on:changeNoteList={setNoteList}/> -->
     {/if}
     {#if landing==1}
     <Landing noteList={notes} focusNote={focusNote} on:make={createNote} on:graph={gotoGraph} uID={uID}/>
