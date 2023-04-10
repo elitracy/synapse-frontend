@@ -6,7 +6,7 @@
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
 
-  background-color: rgb(179, 200, 200);
+  background-color: lightgray;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -58,7 +58,7 @@ h1 {
   align-items: center; 
 
 
-  background-color: white;
+  background-color: lightgray;
 }
 
 button {

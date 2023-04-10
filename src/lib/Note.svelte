@@ -494,6 +494,9 @@
 
     let tagFocus = false;
 
+    let gptResponse: string;
+    gptResponse = "Hit the question mark by a topic to generate a short summary of that topic! Alternatively, hit the quotes to generate three outside references to the material covered in a given tag.";
+
     function zoomTo(i:number){
         window.scrollTo({
         top: i,
@@ -509,6 +512,7 @@
     function setFocusName(s:string|null){
         clearTagDisplay();
         tagName = s;
+        subNoteList = [];
 
         if(tagName)
         {
@@ -564,6 +568,35 @@
 
     function init(el:HTMLDivElement){
         el.focus();
+    }
+
+    async function askGPT(r:tagrange) {
+
+        axios.post(url1+"/gpt/question",{    question: quill.getText(r[0],r[1]) })
+        .then((response) => {
+            gptResponse = response.data.data[0].message.content;
+
+            console.log(JSON.stringify(response))
+        })
+        .catch((error) => {
+        console.log(error);
+        });
+
+    }
+
+    async function askGPTRef(r:tagrange) {
+
+        axios.post(url1+"/gpt/getReferences",{    content: quill.getText(r[0],r[1]) })
+        .then((response) => {
+            gptResponse = response.data.data[0].message.content;
+
+
+            console.log(JSON.stringify(response))
+        })
+        .catch((error) => {
+        console.log(error);
+        });
+
     }
 
 
@@ -638,12 +671,19 @@
                 {#each activeRanges as rng}
                     <div style="width:20vw;display:flex;flex-direction:row;align-items:center; justify-content:left;">
                 
-                        <button class="delete" on:click={()=>deleteTag(rng[6])}>
-                            X
-                        </button>
+                        
                         <div class="activeName" tabindex="-1" on:focusin={()=>{clearTagDisplay();zoomTo(rng[2]+150);setFocusName(rng[4]);}} >
                             {rng[4]}
                         </div>
+                        <button class="question" on:click={()=>askGPT(rng)}>
+                            ?
+                        </button>
+                        <button class="question" on:click={()=>askGPTRef(rng)}>
+                            ""
+                        </button>
+                        <button class="delete" on:click={()=>deleteTag(rng[6])}>
+                            X
+                        </button>
                     </div>
                 {/each}
                 </div>
@@ -669,7 +709,7 @@
     </div> 
     
     <div class="gpt">
-
+        {gptResponse}
     </div>
     
 
@@ -710,12 +750,16 @@
     .gpt{
         position: fixed;
         bottom: 1vh;
-        right: 7vw;
+        left: 2.5vw;
 
-        width: 10vw;
-        height: 5em;
+        width: 15vw;
+        height: fit-content;
 
-        background-color: beige;
+        padding: 5px;
+
+        background-color: #242424;
+
+        border-radius: 5px;
     }
 
     .tag1{
@@ -759,6 +803,23 @@
         font-size: .8em;
 
         padding: 0;
+        margin: 0;
+
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .question{
+        background-color: transparent;
+        color: navy;
+        border:none;
+        width:1.1em;
+        height: 1.1em;
+        font-size: .8em;
+
+        padding-left: 10px;
         margin: 0;
 
         text-align: center;
