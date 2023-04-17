@@ -63,7 +63,7 @@
 <TopAppBar bind:this={topAppBar} variant="short" style="background-color: #205479;">
     <Row>
       <Section>
-        <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton>
+        <!-- <IconButton class="material-icons" on:click={() => sidebar_show = !sidebar_show}>menu</IconButton> -->
         <Title style="cursor:pointer" on:click={goLanding}>Synapse</Title>
       </Section>
       <Section align="end" toolbar>

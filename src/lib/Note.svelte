@@ -759,6 +759,8 @@
 
         background-color: #242424;
 
+        color: lightgray;
+
         border-radius: 5px;
     }
 
