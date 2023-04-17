@@ -305,6 +305,7 @@
         pg1.onclick = function(e:MouseEvent){
             clearTagDisplay();
             quill.focus();
+            hardSave();
         };
         pg1.onmouseover = function(e:MouseEvent){
             pg1.style.cursor = "text";
@@ -333,23 +334,22 @@
 
     afterUpdate(async () => {
         if(focusNote.ops!=null && noteId != focusNote.id) {
-            console.log("updating display contents");
-            loadText(focusNote.ops);
+            hardSave();
             noteId = focusNote.id;
             noteId = noteId;
             title = focusNote.name;
             title = title;
-            //hardSave();
+            loadText(focusNote.ops);
+            
         } else if(focusNote.ops==null && noteId != focusNote.id) {
-            console.log("updating display contents to nothing");
+            hardSave();
             quill.setText("");
             noteId = focusNote.id;
             title = focusNote.name;
-            //hardSave();
         }
         if(focusNote.name!=title) {
             focusNote.name = title;
-            //hardSave();
+            hardSave();
         }
 
     });
@@ -433,7 +433,7 @@
 
     }
 
-    function loadText(ops:string) {
+    async function loadText(ops:string) {
         let d1 = quill.getContents();
         d1.ops = JSON.parse(ops);
         quill.setContents(d1);
@@ -446,11 +446,27 @@
 
         activeRanges = [];
 
-        for(let i = 0;i<focusNote.tgL.length;i++){
-            activeRanges.push(JSON.parse(focusNote.tgL[i]));
-        }
+        tagList = [];
 
-        activeRanges = activeRanges;
+        await axios.get(url1+'/'+focusNote.id+'/tags',{}).then(function (response){
+            if(response.data) {
+                for(let j = 0;j<response.data.tags.length;j++) {
+                    let name = JSON.parse(response.data.tags[j].name);
+                    name.push(response.data.tags[j].id);
+                    tagList.push(JSON.stringify(name));
+                }
+
+                focusNote.tgL = tagList;
+
+                for(let i = 0;i<focusNote.tgL.length;i++){
+                    activeRanges.push(JSON.parse(focusNote.tgL[i]));
+                }
+
+                activeRanges = activeRanges;
+            }
+        });
+
+        
     }
 
     function loadTextandZoom(ops:string, tgn:string) {
